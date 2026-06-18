@@ -100,4 +100,4 @@ attendance-management-system/
 1. **Camera Permission**: The application assumes the client browser has given permission to access the webcam for live selfies.
 2. **Standard Shift Definition**: The standard shift duration is fixed at 8 hours as per the assessment instructions.
 3. **Retrospective Overtime**: Employees can only request overtime retrospectively after completing a full shift, avoiding concurrent active timer complications.
-4. **Theme Preference**: The system defaults to dark mode upon first launch and caches user preference in local storage.
+4. **Theme Preference**: The system defaults to light mode upon first launch and caches user preference in local storage.

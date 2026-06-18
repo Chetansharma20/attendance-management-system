@@ -34,7 +34,7 @@ export const registerUser = async ({
   };
 };
 
-export const getUsersExceptAdmin = async (roleFilter, page=1, limit=10) => {
+export const getUsersExceptAdmin = async (roleFilter, page = 1, limit = 10) => {
   const query = { role: { $ne: "admin" } };
 
   if (roleFilter && roleFilter !== "all") {

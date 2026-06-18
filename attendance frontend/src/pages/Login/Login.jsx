@@ -36,10 +36,13 @@ export default function Login() {
       <div className="absolute top-6 right-6 z-30">
         <button
           onClick={toggleTheme}
-          className="p-3 rounded-xl bg-theme-card hover:bg-theme-card-hover border border-theme-border text-theme-muted hover:text-theme-bright transition-colors cursor-pointer shadow-sm"
+          className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-theme-card hover:bg-theme-card-hover border border-theme-border text-theme-muted hover:text-theme-bright transition-colors cursor-pointer shadow-sm"
           title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
         >
-          {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+          {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+          <span className="text-xs font-semibold capitalize">
+            {theme === 'light' ? 'Dark' : 'Light'} Mode
+          </span>
         </button>
       </div>
 

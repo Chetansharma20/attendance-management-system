@@ -110,10 +110,13 @@ export default function Dashboard() {
             
             <button
               onClick={toggleTheme}
-              className="p-2.5 rounded-xl bg-theme-card hover:bg-theme-card-hover border border-theme-border text-theme-muted hover:text-theme-bright transition-colors cursor-pointer"
+              className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-theme-card hover:bg-theme-card-hover border border-theme-border text-theme-muted hover:text-theme-bright transition-colors cursor-pointer"
               title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
             >
               {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+              <span className="text-xs font-semibold capitalize hidden md:inline">
+                {theme === 'light' ? 'Dark' : 'Light'} Mode
+              </span>
             </button>
 
             <button
