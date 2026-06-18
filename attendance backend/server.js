@@ -12,13 +12,33 @@ const server = express();
 
 connectDB();
 
-const clientUrl = process.env.CLIENT_URL 
-  ? process.env.CLIENT_URL.replace(/\/$/, '') 
-  : 'http://localhost:5173';
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+];
+
+// Add all CLIENT_URL values from env (comma-separated supported)
+if (process.env.CLIENT_URL) {
+  process.env.CLIENT_URL.split(',').forEach((url) => {
+    allowedOrigins.push(url.trim().replace(/\/$/, ''));
+  });
+}
 
 server.use(cors({
-  origin: clientUrl,
-  credentials: true, // allow cookies to be sent cross-origin
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g. mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+
+    // Allow any vercel.app subdomain for this project
+    const isVercel = /^https:\/\/attendance-management-system.*\.vercel\.app$/.test(origin);
+
+    if (allowedOrigins.includes(origin) || isVercel) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`CORS blocked: ${origin}`));
+  },
+  credentials: true,
 }));
 server.use(express.json());
 server.use(cookieParser());
