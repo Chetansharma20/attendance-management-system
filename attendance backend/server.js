@@ -12,8 +12,12 @@ const server = express();
 
 connectDB();
 
+const clientUrl = process.env.CLIENT_URL 
+  ? process.env.CLIENT_URL.replace(/\/$/, '') 
+  : 'http://localhost:5173';
+
 server.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: clientUrl,
   credentials: true, // allow cookies to be sent cross-origin
 }));
 server.use(express.json());
