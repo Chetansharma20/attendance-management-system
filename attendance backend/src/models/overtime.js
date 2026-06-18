@@ -58,6 +58,7 @@ const overtimeSchema = new mongoose.Schema(
 
 overtimeSchema.index({ employeeId: 1, createdAt: -1 });
 overtimeSchema.index({ status: 1 });
+overtimeSchema.index({ attendanceId: 1 });
 
 const Overtime = mongoose.model(
   "Overtime",

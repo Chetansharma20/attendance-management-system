@@ -5,6 +5,7 @@ import { baseQueryWithReauth } from '../baseQuery.js';
 export const authApi = createApi({
   reducerPath: 'authApi',
   baseQuery: baseQueryWithReauth,
+  tagTypes: ['User'],
   endpoints: (builder) => ({
 
     // POST /api/v1/auth/login
@@ -50,17 +51,20 @@ export const authApi = createApi({
         method: 'POST',
         body: userData,
       }),
+      invalidatesTags: ['User'],
     }),
 
     // GET /api/v1/users/fetchusers
     fetchUsers: builder.query({
       query: ({ role = 'all', page = 1, limit = 10 } = {}) => 
         `/users/fetchusers?role=${role}&page=${page}&limit=${limit}`,
+      providesTags: ['User'],
     }),
 
     // GET /api/v1/users/my-team  (manager only)
     getMyTeam: builder.query({
       query: () => '/users/my-team',
+      providesTags: ['User'],
     }),
 
   }),
