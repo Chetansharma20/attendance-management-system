@@ -18,6 +18,8 @@ export default function TeamAttendance() {
   const [expandedRows, setExpandedRows] = useState(new Set());
   const [validatingRow, setValidatingRow] = useState({ id: null, status: null });
   const [remarks, setRemarks] = useState('');
+  // Optimistic: track IDs being validated so buttons hide immediately on confirm
+  const [pendingValidations, setPendingValidations] = useState(new Set());
   const [isReportOpen, setIsReportOpen] = useState(false);
 
   const teamAttendance = teamAttendanceResponse?.data || [];
@@ -31,11 +33,19 @@ export default function TeamAttendance() {
   };
 
   const handleValidate = async (attendanceId, status, remarks = '') => {
+    // Optimistically hide buttons immediately
+    setPendingValidations((prev) => new Set(prev).add(attendanceId));
+    setValidatingRow({ id: null, status: null });
+    setRemarks('');
     try {
       await validateAttendance({ attendanceId, status, remarks }).unwrap();
-      setValidatingRow({ id: null, status: null });
-      setRemarks('');
     } catch (err) {
+      // Revert optimistic update on failure
+      setPendingValidations((prev) => {
+        const next = new Set(prev);
+        next.delete(attendanceId);
+        return next;
+      });
       alert(err?.data?.message || err?.error || 'Validation failed');
     }
   };
@@ -124,7 +134,7 @@ export default function TeamAttendance() {
               {teamAttendance.map((log) => {
                 const empName = log.employeeId?.name || 'Unknown User';
                 const empEmail = log.employeeId?.email || '';
-                const isPending = log.validation?.status === 'pending';
+                const isPending = log.validation?.status === 'pending' && !pendingValidations.has(log._id);
                 const isExpanded = expandedRows.has(log._id);
 
                 return (
