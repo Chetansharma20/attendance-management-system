@@ -39,20 +39,20 @@ export default function PendingOvertime() {
   };
 
   return (
-    <section className="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-6 shadow-xl space-y-6">
+    <section className="bg-theme-card border border-theme-border rounded-2xl p-6 shadow-xl space-y-6 transition-colors duration-200">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-violet-500/10 text-violet-400 rounded-xl">
+          <div className="p-2.5 bg-violet-500/10 text-violet-600 dark:text-violet-400 rounded-xl">
             <Calendar className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white">Pending Overtime Requests</h2>
-            <p className="text-xs text-slate-400">Review and approve employee overtime requests</p>
+            <h2 className="text-xl font-bold text-theme-bright">Pending Overtime Requests</h2>
+            <p className="text-xs text-theme-muted">Review and approve employee overtime requests</p>
           </div>
         </div>
         <button
           onClick={refetchPendingOvertime}
-          className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+          className="p-2 text-theme-muted hover:text-theme-bright hover:bg-theme-card-hover rounded-lg transition-colors cursor-pointer"
           title="Refresh overtime requests"
         >
           <RefreshCw className={`w-4 h-4 ${isPendingOvertimeLoading ? 'animate-spin' : ''}`} />
@@ -64,41 +64,41 @@ export default function PendingOvertime() {
           <span className="w-8 h-8 border-3 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" />
         </div>
       ) : isPendingOvertimeError ? (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl flex items-center gap-3">
+        <div className="bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 p-4 rounded-xl flex items-center gap-3">
           <AlertCircle className="w-5 h-5 shrink-0" />
           <div>
             <p className="font-semibold text-sm">Failed to load overtime requests</p>
-            <p className="text-xs text-slate-400">{pendingOvertimeError?.data?.message || pendingOvertimeError?.error || 'Unknown error'}</p>
+            <p className="text-xs text-theme-muted">{pendingOvertimeError?.data?.message || pendingOvertimeError?.error || 'Unknown error'}</p>
           </div>
         </div>
       ) : pendingOvertime.length === 0 ? (
-        <div className="py-12 text-center text-slate-500 text-sm">No pending overtime requests found.</div>
+        <div className="py-12 text-center text-theme-muted text-sm">No pending overtime requests found.</div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-slate-800/60 bg-slate-950/40">
+        <div className="overflow-x-auto rounded-xl border border-theme-border bg-theme-bg/30">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-800/80 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-900/30">
+              <tr className="border-b border-theme-border text-xs font-semibold text-theme-muted uppercase tracking-wider bg-theme-card-hover/50">
                 <th className="py-4 px-5">Employee</th>
                 <th className="py-4 px-5">Requested Hours</th>
                 <th className="py-4 px-5">Reason</th>
                 <th className="py-4 px-5 text-center">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/40 text-sm">
+            <tbody className="divide-y divide-theme-border/60 text-sm">
               {pendingOvertime.map((req) => {
                 const empName = req.employeeId?.name || 'Unknown User';
                 const empEmail = req.employeeId?.email || '';
 
                 return (
-                  <tr key={req._id} className="hover:bg-slate-900/30 transition-colors">
+                  <tr key={req._id} className="hover:bg-theme-card-hover/50 transition-colors">
                     <td className="py-4 px-5">
-                      <p className="font-medium text-white">{empName}</p>
-                      <p className="text-xs text-slate-400">{empEmail}</p>
+                      <p className="font-medium text-theme-bright">{empName}</p>
+                      <p className="text-xs text-theme-muted">{empEmail}</p>
                     </td>
-                    <td className="py-4 px-5 text-slate-200 font-bold font-mono text-base">
+                    <td className="py-4 px-5 text-theme-bright font-bold font-mono text-base">
                       {req.requestedHours} hr{req.requestedHours !== 1 ? 's' : ''}
                     </td>
-                    <td className="py-4 px-5 text-slate-300 italic max-w-xs truncate" title={req.reason}>
+                    <td className="py-4 px-5 text-theme-text italic max-w-xs truncate" title={req.reason}>
                       "{req.reason}"
                     </td>
                     <td className="py-4 px-5 flex items-center justify-center gap-3">

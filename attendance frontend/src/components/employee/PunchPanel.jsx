@@ -16,8 +16,6 @@ export default function PunchPanel({ logs, refetch }) {
 
   const videoRef = useRef(null);
 
-  // Update clock every second
-  // ... (rest of helper functions remain unchanged)
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
@@ -158,21 +156,21 @@ export default function PunchPanel({ logs, refetch }) {
   const isSubmitting = isPunchingIn || isPunchingOut || gpsLoading;
 
   return (
-    <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+    <div className="bg-theme-card border border-theme-border rounded-2xl p-6 shadow-xl relative overflow-hidden transition-colors duration-200">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         
         {/* Left Side: Current State and Punch Buttons */}
-        <div className="flex items-center gap-4 bg-slate-950/40 border border-slate-800/80 rounded-xl px-5 py-3.5 shrink-0">
+        <div className="flex items-center gap-4 bg-theme-bg border border-theme-border rounded-xl px-5 py-3.5 shrink-0 transition-colors duration-200">
           <div className="space-y-0.5">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Current State</span>
+            <span className="text-[10px] font-bold text-theme-muted uppercase tracking-widest block font-sans">Current State</span>
             <div className="flex items-center gap-2">
-              <span className={`w-2 h-2 rounded-full ${isClockedIn ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
-              <span className="text-sm font-bold text-slate-200">
+              <span className={`w-2 h-2 rounded-full ${isClockedIn ? 'bg-emerald-400 animate-pulse' : 'bg-slate-400'}`} />
+              <span className="text-sm font-bold text-theme-text">
                 {isClockedIn ? 'Punched In' : 'Not Punched In'}
               </span>
             </div>
             {isClockedIn && activeLog?.punchIn?.time && (
-              <span className="text-[10px] text-slate-400 block font-mono">
+              <span className="text-[10px] text-theme-muted block font-mono">
                 Started at {new Date(activeLog.punchIn.time).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
               </span>
             )}
@@ -183,8 +181,8 @@ export default function PunchPanel({ logs, refetch }) {
               onClick={startCamera}
               className={`px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-md cursor-pointer hover:scale-[1.02] ${
                 isClockedIn
-                  ? 'bg-red-600/90 hover:bg-red-500 text-white border border-red-500/20'
-                  : 'bg-violet-600 hover:bg-violet-500 text-white border border-violet-500/20'
+                  ? 'bg-red-600 hover:bg-red-505 text-white shadow-red-950/20'
+                  : 'bg-violet-600 hover:bg-violet-500 text-white shadow-violet-950/20'
               }`}
             >
               {isClockedIn ? 'Punch Out' : 'Punch In'}
@@ -194,12 +192,12 @@ export default function PunchPanel({ logs, refetch }) {
 
         {/* Right Side: Real-time Clock */}
         <div className="space-y-1 md:text-right">
-          <div className="flex items-center md:justify-end gap-2 text-slate-400 text-sm font-semibold uppercase tracking-wider">
-            <Clock className="w-4 h-4 text-violet-400" />
+          <div className="flex items-center md:justify-end gap-2 text-theme-muted text-sm font-semibold uppercase tracking-wider">
+            <Clock className="w-4 h-4 text-violet-600 dark:text-violet-400" />
             <span>Real-time Clock</span>
           </div>
-          <p className="text-3xl font-extrabold text-white font-mono tracking-tight">{formattedTime}</p>
-          <p className="text-xs text-slate-400 font-medium">{formattedDate}</p>
+          <p className="text-3xl font-extrabold text-theme-bright font-mono tracking-tight">{formattedTime}</p>
+          <p className="text-xs text-theme-muted font-medium">{formattedDate}</p>
         </div>
 
       </div>

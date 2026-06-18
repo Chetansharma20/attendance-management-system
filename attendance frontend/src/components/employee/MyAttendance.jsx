@@ -77,25 +77,25 @@ export default function MyAttendance() {
       {/* Section Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-sky-500/10 text-sky-400 rounded-xl border border-sky-500/20">
+          <div className="p-2.5 bg-sky-500/10 text-sky-600 dark:text-sky-400 rounded-xl border border-sky-500/20">
             <CalendarDays className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white">My Attendance</h2>
-            <p className="text-xs text-slate-400">Your personal clock-in & clock-out history</p>
+            <h2 className="text-xl font-bold text-theme-bright">My Attendance</h2>
+            <p className="text-xs text-theme-muted">Your personal clock-in & clock-out history</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsReportOpen(true)}
-            className="inline-flex items-center gap-1.5 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/20 px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 bg-sky-500/10 hover:bg-sky-500/20 text-sky-600 dark:text-sky-400 border border-sky-500/20 px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
           >
             <Calendar className="w-3.5 h-3.5" />
             <span>Daily Report</span>
           </button>
           <button
             onClick={refetch}
-            className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+            className="p-2 text-theme-muted hover:text-theme-bright hover:bg-theme-card-hover rounded-lg transition-colors cursor-pointer"
             title="Refresh attendance"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
@@ -122,30 +122,30 @@ export default function MyAttendance() {
       )}
 
       {/* Attendance Table */}
-      <div className="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-6 shadow-xl space-y-5">
+      <div className="bg-theme-card border border-theme-border rounded-2xl p-6 shadow-xl space-y-5 transition-colors duration-200">
         {isLoading ? (
           <div className="py-12 flex justify-center items-center">
             <span className="w-8 h-8 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" />
           </div>
         ) : isError ? (
-          <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl flex items-center gap-3">
+          <div className="bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 p-4 rounded-xl flex items-center gap-3">
             <AlertCircle className="w-5 h-5 shrink-0" />
             <div>
               <p className="font-semibold text-sm">Failed to load attendance</p>
-              <p className="text-xs text-slate-400">{error?.data?.message || error?.error || 'Unknown error'}</p>
+              <p className="text-xs text-theme-muted">{error?.data?.message || error?.error || 'Unknown error'}</p>
             </div>
           </div>
         ) : logs.length === 0 ? (
           <div className="py-12 text-center">
-            <Calendar className="w-12 h-12 text-slate-700 mx-auto mb-3" />
-            <p className="text-slate-500 text-sm">No attendance records found.</p>
-            <p className="text-slate-600 text-xs mt-1">Your logs will appear here after you punch in.</p>
+            <Calendar className="w-12 h-12 text-theme-muted mx-auto mb-3" />
+            <p className="text-theme-muted text-sm">No attendance records found.</p>
+            <p className="text-theme-muted/80 text-xs mt-1">Your logs will appear here after you punch in.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-slate-800/60 bg-slate-950/40">
+          <div className="overflow-x-auto rounded-xl border border-theme-border bg-theme-bg/30">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-800/80 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-900/30">
+                <tr className="border-b border-theme-border text-xs font-semibold text-theme-muted uppercase tracking-wider bg-theme-card-hover/50">
                   <th className="py-4 px-5 w-[15%]">Date</th>
                   <th className="py-4 px-5 w-[15%]">Punch In</th>
                   <th className="py-4 px-5 w-[15%]">Punch Out</th>
@@ -155,7 +155,7 @@ export default function MyAttendance() {
                   <th className="py-4 px-5 w-[12%] text-center">Overtime</th>
                 </tr>
               </thead>
-              <tbody className="text-sm divide-y divide-slate-800/40">
+              <tbody className="text-sm divide-y divide-theme-border/60">
                 {logs.map((log) => {
                   const isCompleted = log.completionStatus === 'completed';
                   const otRequest = log.overtimeRequest;
@@ -165,12 +165,12 @@ export default function MyAttendance() {
 
                   return (
                     <React.Fragment key={log._id}>
-                      <tr className="hover:bg-slate-900/30 transition-colors">
+                      <tr className="hover:bg-theme-card-hover/50 transition-colors">
                         {/* Date */}
-                        <td className="py-4 px-5 text-slate-200 font-medium">{formatDate(log.date)}</td>
+                        <td className="py-4 px-5 text-theme-bright font-medium">{formatDate(log.date)}</td>
 
                         {/* Punch In */}
-                        <td className="py-4 px-5 font-mono text-slate-300 text-xs">
+                        <td className="py-4 px-5 font-mono text-theme-text text-xs">
                           {log.punchIn?.time ? (
                             <span className="inline-flex items-center gap-1.5">
                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
@@ -180,7 +180,7 @@ export default function MyAttendance() {
                         </td>
 
                         {/* Punch Out */}
-                        <td className="py-4 px-5 font-mono text-slate-300 text-xs">
+                        <td className="py-4 px-5 font-mono text-theme-text text-xs">
                           {log.punchOut?.time ? (
                             <span className="inline-flex items-center gap-1.5">
                               <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" />
@@ -190,7 +190,7 @@ export default function MyAttendance() {
                         </td>
 
                         {/* Working Hours */}
-                        <td className="py-4 px-5 font-mono text-slate-100 font-semibold">
+                        <td className="py-4 px-5 font-mono text-theme-bright font-semibold">
                           {log.workingHours ? `${log.workingHours.toFixed(2)}h` : '-'}
                         </td>
 
@@ -198,8 +198,8 @@ export default function MyAttendance() {
                         <td className="py-4 px-5">
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider ${
                             isCompleted
-                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                              : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                              : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
                           }`}>
                             {log.completionStatus || 'incomplete'}
                           </span>
@@ -210,17 +210,17 @@ export default function MyAttendance() {
                           <div className="flex items-center gap-1.5">
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider ${
                               log.validation?.status === 'valid'
-                                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
                                 : log.validation?.status === 'invalid'
-                                ? 'bg-red-500/10 text-red-400 border border-red-500/20'
-                                : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                                ? 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20'
+                                : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
                             }`}>
                               {log.validation?.status || 'pending'}
                             </span>
                             {remarks && (
                               <button
                                 onClick={() => toggleRemarks(log._id)}
-                                className="text-slate-500 hover:text-slate-300 transition-colors"
+                                className="text-theme-muted hover:text-theme-bright transition-colors cursor-pointer"
                                 title="Show remarks"
                               >
                                 {expandedRemarks.has(log._id) ? (
@@ -239,7 +239,7 @@ export default function MyAttendance() {
                             hasOvertimeForm ? (
                               <button
                                 onClick={() => setOvertimeFormFor(null)}
-                                className="inline-flex items-center gap-1 text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                                className="inline-flex items-center gap-1 text-theme-muted hover:text-theme-bright bg-theme-card-hover border border-theme-border text-xs font-medium px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
                               >
                                 <X className="w-3 h-3" />
                                 Close
@@ -247,7 +247,7 @@ export default function MyAttendance() {
                             ) : (
                               <button
                                 onClick={() => setOvertimeFormFor(log._id)}
-                                className="inline-flex items-center gap-1.5 bg-violet-600/80 hover:bg-violet-600 text-white font-semibold text-xs px-3.5 py-1.5 rounded-lg transition-colors shadow-sm cursor-pointer whitespace-nowrap"
+                                className="inline-flex items-center gap-1.5 bg-violet-600 hover:bg-violet-500 text-white font-semibold text-xs px-3.5 py-1.5 rounded-lg transition-colors shadow-sm cursor-pointer whitespace-nowrap"
                               >
                                 <Timer className="w-3.5 h-3.5" />
                                 Request
@@ -256,31 +256,31 @@ export default function MyAttendance() {
                           ) : otRequest ? (
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider ${
                               otRequest.status === 'approved'
-                                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
                                 : otRequest.status === 'rejected'
-                                ? 'bg-red-500/10 text-red-400 border border-red-500/20'
-                                : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                                ? 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20'
+                                : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
                             }`}>
                               {otRequest.status === 'approved' && 'Approved ✓'}
                               {otRequest.status === 'rejected' && 'Rejected ✗'}
                               {otRequest.status === 'pending' && 'Pending ⌛'}
                             </span>
                           ) : alreadyRequested ? (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
                               Pending ⌛
                             </span>
                           ) : (
-                            <span className="text-slate-600 text-xs">—</span>
+                            <span className="text-theme-muted text-xs">—</span>
                           )}
                         </td>
                       </tr>
 
                       {/* Remarks expand row */}
                       {remarks && expandedRemarks.has(log._id) && (
-                        <tr className="bg-slate-950/40">
+                        <tr className="bg-theme-bg/50">
                           <td colSpan={7} className="px-5 pb-3 pt-0">
-                            <p className="text-xs text-slate-400 italic bg-slate-900/50 border border-slate-800 rounded-lg px-4 py-2.5">
-                              <span className="text-slate-500 not-italic font-semibold mr-1">Remarks:</span>
+                            <p className="text-xs text-theme-muted italic bg-theme-card border border-theme-border rounded-lg px-4 py-2.5">
+                              <span className="text-theme-muted not-italic font-semibold mr-1">Remarks:</span>
                               {remarks}
                             </p>
                           </td>
@@ -289,7 +289,7 @@ export default function MyAttendance() {
 
                       {/* Overtime request form row */}
                       {hasOvertimeForm && (
-                        <tr className="bg-slate-950/20">
+                        <tr className="bg-theme-bg/30">
                           <td colSpan={7} className="px-5 pb-4 pt-0">
                             <OvertimeRequestForm
                               attendanceId={log._id}

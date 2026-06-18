@@ -2,6 +2,16 @@
 
 @theme {
   --font-sans: 'Inter', sans-serif;
+  --color-theme-bg: var(--theme-bg);
+  --color-theme-card: var(--theme-card);
+  --color-theme-card-hover: var(--theme-card-hover);
+  --color-theme-border: var(--theme-border);
+  --color-theme-text: var(--theme-text);
+  --color-theme-muted: var(--theme-muted);
+  --color-theme-bright: var(--theme-bright);
+  --color-theme-input: var(--theme-input);
+  --color-theme-input-border: var(--theme-input-border);
+  --color-theme-header: var(--theme-header);
 }
 
 @layer base {
@@ -11,9 +21,38 @@
     padding: 0;
   }
 }
+
+:root {
+  --theme-bg: #f8fafc; /* slate-50 */
+  --theme-card: #ffffff; /* white */
+  --theme-card-hover: #f1f5f9; /* slate-100 */
+  --theme-border: #cbd5e1; /* slate-300 */
+  --theme-text: #334155; /* slate-700 */
+  --theme-muted: #64748b; /* slate-500 */
+  --theme-bright: #0f172a; /* slate-900 */
+  --theme-input: #ffffff;
+  --theme-input-border: #cbd5e1; /* slate-300 */
+  --theme-header: rgba(255, 255, 255, 0.7);
+}
+
+.dark {
+  --theme-bg: #020617; /* slate-950 */
+  --theme-card: #0f172a; /* slate-900 */
+  --theme-card-hover: #1e293b; /* slate-800 */
+  --theme-border: rgba(30, 41, 59, 0.8); /* slate-800 */
+  --theme-text: #cbd5e1; /* slate-300 */
+  --theme-muted: #94a3b8; /* slate-400 */
+  --theme-bright: #ffffff; /* white */
+  --theme-input: #0f172a; /* slate-900 */
+  --theme-input-border: #334155; /* slate-700 */
+  --theme-header: rgba(15, 23, 42, 0.4);
+}
+
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #020617;
+  background-color: var(--theme-bg);
+  color: var(--theme-text);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }

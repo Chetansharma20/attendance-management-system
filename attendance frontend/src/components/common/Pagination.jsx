@@ -36,10 +36,10 @@ export default function Pagination({
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 px-2">
       {/* Description */}
       {totalItems !== undefined ? (
-        <span className="text-xs sm:text-sm text-slate-400 font-medium">
-          Showing <span className="text-white font-semibold">{startItem}</span> to{' '}
-          <span className="text-white font-semibold">{endItem}</span> of{' '}
-          <span className="text-white font-semibold">{totalItems}</span> entries
+        <span className="text-xs sm:text-sm text-theme-muted font-medium">
+          Showing <span className="text-theme-bright font-semibold">{startItem}</span> to{' '}
+          <span className="text-theme-bright font-semibold">{endItem}</span> of{' '}
+          <span className="text-theme-bright font-semibold">{totalItems}</span> entries
         </span>
       ) : (
         <div />
@@ -50,7 +50,7 @@ export default function Pagination({
         <button
           onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="p-2 bg-slate-900/60 hover:bg-slate-800/80 disabled:opacity-40 disabled:hover:bg-slate-900/60 text-slate-300 rounded-lg border border-slate-800/80 transition-all cursor-pointer disabled:cursor-not-allowed"
+          className="p-2 bg-theme-card hover:bg-theme-card-hover disabled:opacity-40 disabled:hover:bg-theme-card text-theme-text rounded-lg border border-theme-border transition-all cursor-pointer disabled:cursor-not-allowed"
           aria-label="Previous page"
         >
           <ChevronLeft className="w-4.5 h-4.5" />
@@ -59,7 +59,7 @@ export default function Pagination({
         {pages.map((p, idx) => {
           if (p === '...') {
             return (
-              <span key={`dots-${idx}`} className="px-2 py-1 text-slate-500 text-sm">
+              <span key={`dots-${idx}`} className="px-2 py-1 text-theme-muted text-sm">
                 ...
               </span>
             );
@@ -73,8 +73,8 @@ export default function Pagination({
               onClick={() => onPageChange(p)}
               className={`px-3 py-1.5 text-xs sm:text-sm font-semibold rounded-lg border transition-all cursor-pointer ${
                 isActive
-                  ? 'bg-violet-600 border-violet-500 text-white shadow-md shadow-violet-900/20'
-                  : 'bg-slate-900/40 border-slate-800/80 hover:bg-slate-800/60 text-slate-300'
+                  ? 'bg-violet-600 border-violet-500 text-white shadow-md'
+                  : 'bg-theme-card border border-theme-border hover:bg-theme-card-hover text-theme-text'
               }`}
             >
               {p}
@@ -85,7 +85,7 @@ export default function Pagination({
         <button
           onClick={() => currentPage < totalPages && onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="p-2 bg-slate-900/60 hover:bg-slate-800/80 disabled:opacity-40 disabled:hover:bg-slate-900/60 text-slate-300 rounded-lg border border-slate-800/80 transition-all cursor-pointer disabled:cursor-not-allowed"
+          className="p-2 bg-theme-card hover:bg-theme-card-hover disabled:opacity-40 disabled:hover:bg-theme-card text-theme-text rounded-lg border border-theme-border transition-all cursor-pointer disabled:cursor-not-allowed"
           aria-label="Next page"
         >
           <ChevronRight className="w-4.5 h-4.5" />

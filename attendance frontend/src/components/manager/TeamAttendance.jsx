@@ -71,28 +71,28 @@ export default function TeamAttendance() {
   };
 
   return (
-    <section className="bg-slate-900/50 border border-slate-800/80 rounded-2xl p-6 shadow-xl space-y-6">
+    <section className="bg-theme-card border border-theme-border rounded-2xl p-6 shadow-xl space-y-6 transition-colors duration-200">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-violet-500/10 text-violet-400 rounded-xl">
+          <div className="p-2.5 bg-violet-500/10 text-violet-600 dark:text-violet-400 rounded-xl">
             <Users className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white">Team Attendance</h2>
-            <p className="text-xs text-slate-400">Track and validate your team's check-ins</p>
+            <h2 className="text-xl font-bold text-theme-bright">Team Attendance</h2>
+            <p className="text-xs text-theme-muted">Track and validate your team's check-ins</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsReportOpen(true)}
-            className="inline-flex items-center gap-1.5 bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 border border-violet-500/20 px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 bg-violet-500/10 hover:bg-violet-500/20 text-violet-600 dark:text-violet-400 border border-violet-500/20 px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
           >
             <Calendar className="w-3.5 h-3.5" />
             <span>Daily Report</span>
           </button>
           <button
             onClick={refetchTeamAttendance}
-            className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+            className="p-2 text-theme-muted hover:text-theme-bright hover:bg-theme-card-hover rounded-lg transition-colors cursor-pointer"
             title="Refresh team attendance"
           >
             <RefreshCw className={`w-4 h-4 ${isTeamAttendanceLoading ? 'animate-spin' : ''}`} />
@@ -105,20 +105,20 @@ export default function TeamAttendance() {
           <span className="w-8 h-8 border-3 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" />
         </div>
       ) : isTeamAttendanceError ? (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl flex items-center gap-3">
+        <div className="bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 p-4 rounded-xl flex items-center gap-3">
           <AlertCircle className="w-5 h-5 shrink-0" />
           <div>
             <p className="font-semibold text-sm">Failed to load team attendance</p>
-            <p className="text-xs text-slate-400">{teamAttendanceError?.data?.message || teamAttendanceError?.error || 'Unknown error'}</p>
+            <p className="text-xs text-theme-muted">{teamAttendanceError?.data?.message || teamAttendanceError?.error || 'Unknown error'}</p>
           </div>
         </div>
       ) : teamAttendance.length === 0 ? (
-        <div className="py-12 text-center text-slate-500 text-sm">No team member attendance logs recorded.</div>
+        <div className="py-12 text-center text-theme-muted text-sm">No team member attendance logs recorded.</div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-slate-800/60 bg-slate-950/40">
+        <div className="overflow-x-auto rounded-xl border border-theme-border bg-theme-bg/30">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-800/80 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-900/30">
+              <tr className="border-b border-theme-border text-xs font-semibold text-theme-muted uppercase tracking-wider bg-theme-card-hover/50">
                 <th className="py-4 px-5 w-1/4">Employee</th>
                 <th className="py-4 px-5 w-[11%]">Date</th>
                 <th className="py-4 px-5 w-[11%]">Punch In</th>
@@ -130,7 +130,7 @@ export default function TeamAttendance() {
                 <th className="py-4 px-5 w-[6%] text-center">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/40 text-sm">
+            <tbody className="divide-y divide-theme-border/60 text-sm">
               {teamAttendance.map((log) => {
                 const empName = log.employeeId?.name || 'Unknown User';
                 const empEmail = log.employeeId?.email || '';
@@ -139,22 +139,22 @@ export default function TeamAttendance() {
 
                 return (
                   <React.Fragment key={log._id}>
-                    <tr className="hover:bg-slate-900/30 transition-colors">
+                    <tr className="hover:bg-theme-card-hover/50 transition-colors">
                       <td className="py-4 px-5">
-                        <p className="font-medium text-white">{empName}</p>
-                        <p className="text-xs text-slate-400">{empEmail}</p>
+                        <p className="font-medium text-theme-bright">{empName}</p>
+                        <p className="text-xs text-theme-muted">{empEmail}</p>
                       </td>
-                      <td className="py-4 px-5 text-slate-300">{formatDate(log.date)}</td>
-                      <td className="py-4 px-5 font-mono text-slate-300 text-xs">{formatTime(log.punchIn?.time)}</td>
-                      <td className="py-4 px-5 font-mono text-slate-300 text-xs">{formatTime(log.punchOut?.time)}</td>
-                      <td className="py-4 px-5 text-slate-200 font-medium font-mono">
+                      <td className="py-4 px-5 text-theme-text">{formatDate(log.date)}</td>
+                      <td className="py-4 px-5 font-mono text-theme-text text-xs">{formatTime(log.punchIn?.time)}</td>
+                      <td className="py-4 px-5 font-mono text-theme-text text-xs">{formatTime(log.punchOut?.time)}</td>
+                      <td className="py-4 px-5 text-theme-bright font-medium font-mono">
                         {log.workingHours ? `${log.workingHours.toFixed(2)}h` : '-'}
                       </td>
                       <td className="py-4 px-5">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wider ${
                           log.completionStatus === 'completed'
-                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                            : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                            : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
                         }`}>
                           {log.completionStatus || 'incomplete'}
                         </span>
@@ -162,10 +162,10 @@ export default function TeamAttendance() {
                       <td className="py-4 px-5">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider ${
                           log.validation?.status === 'valid'
-                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
                             : log.validation?.status === 'invalid'
-                            ? 'bg-red-500/10 text-red-400 border border-red-500/20'
-                            : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                            ? 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20'
+                            : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
                         }`}>
                           {log.validation?.status || 'pending'}
                         </span>
@@ -175,8 +175,8 @@ export default function TeamAttendance() {
                           onClick={() => toggleExpand(log._id)}
                           className={`text-xs font-semibold px-2.5 py-1 rounded-lg border transition-colors cursor-pointer ${
                             isExpanded
-                              ? 'bg-slate-700 text-slate-200 border-slate-600 hover:bg-slate-600'
-                              : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700 hover:text-white'
+                              ? 'bg-theme-card-hover text-theme-bright border-theme-border'
+                              : 'bg-theme-card text-theme-text border-theme-border hover:bg-theme-card-hover hover:text-theme-bright'
                           }`}
                         >
                           {isExpanded ? 'Hide' : 'View Details'}
@@ -185,13 +185,13 @@ export default function TeamAttendance() {
                       <td className="py-4 px-5 text-center">
                         {isPending ? (
                           validatingRow.id === log._id ? (
-                            <div className="flex flex-col gap-2 min-w-[200px] bg-slate-900 border border-slate-800 p-2 rounded-lg shadow-lg mx-auto align-middle">
+                            <div className="flex flex-col gap-2 min-w-[200px] bg-theme-card border border-theme-border p-2 rounded-lg shadow-lg mx-auto align-middle">
                               <input
                                 type="text"
                                 value={remarks}
                                 onChange={(e) => setRemarks(e.target.value)}
                                 placeholder={validatingRow.status === 'valid' ? "Remarks (optional)..." : "Reason for rejection..."}
-                                className="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-violet-500"
+                                className="w-full bg-theme-bg border border-theme-input-border rounded px-2 py-1 text-xs text-theme-bright focus:outline-none focus:border-violet-500"
                               />
                               <div className="flex gap-2 justify-end">
                                 <button
@@ -199,7 +199,7 @@ export default function TeamAttendance() {
                                     setValidatingRow({ id: null, status: null });
                                     setRemarks('');
                                   }}
-                                  className="text-[10px] text-slate-400 hover:text-white px-2 py-1 bg-slate-800 rounded transition-colors cursor-pointer"
+                                  className="text-[10px] text-theme-muted hover:text-theme-bright px-2 py-1 bg-theme-card-hover rounded transition-colors cursor-pointer"
                                 >
                                   Cancel
                                 </button>
@@ -249,7 +249,7 @@ export default function TeamAttendance() {
                             </div>
                           )
                         ) : (
-                          <span className="text-slate-500 text-xs">-</span>
+                          <span className="text-theme-muted text-xs">-</span>
                         )}
                       </td>
                     </tr>

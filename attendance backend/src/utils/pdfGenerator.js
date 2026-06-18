@@ -36,36 +36,6 @@ export const generateDailyReportPDF = async (dateStr, logs, requestorName) => {
 
     let y = 100;
 
-    // ─── Summary Boxes ────────────────────────────────────────────────────────
-    const total = logs.length;
-    const completed = logs.filter((l) => l.completionStatus === "completed").length;
-    const incomplete = total - completed;
-
-    const boxH = 38;
-    const boxW = (contentWidth - 20) / 3;
-
-    [
-      { label: "Total Records", value: total, color: "#6366f1" },
-      { label: "Completed", value: completed, color: "#10b981" },
-      { label: "Incomplete", value: incomplete, color: "#f59e0b" },
-    ].forEach((item, i) => {
-      const bx = margin + i * (boxW + 10);
-      // border
-      doc.rect(bx, y, boxW, boxH).fillAndStroke("#f8fafc", item.color);
-      doc
-        .fontSize(18)
-        .font("Helvetica-Bold")
-        .fillColor(item.color)
-        .text(String(item.value), bx, y + 4, { width: boxW, align: "center" });
-      doc
-        .fontSize(7)
-        .font("Helvetica")
-        .fillColor("#64748b")
-        .text(item.label, bx, y + 24, { width: boxW, align: "center" });
-    });
-
-    y += boxH + 18;
-
     // ─── Empty state ──────────────────────────────────────────────────────────
     if (logs.length === 0) {
       doc.rect(margin, y, contentWidth, 60).fill("#f8fafc");
