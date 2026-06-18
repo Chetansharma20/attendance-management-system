@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import { Calendar, Download, X, MapPin, Camera, ExternalLink, Loader2 } from 'lucide-react';
-import axios from 'axios';
 import { useDownloadDailyReportMutation } from '../../redux/api/attendanceApi';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1';

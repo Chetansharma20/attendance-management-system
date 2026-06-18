@@ -160,22 +160,15 @@ export default function PunchPanel({ logs, refetch }) {
   return (
     <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-slate-400 text-sm font-semibold uppercase tracking-wider">
-            <Clock className="w-4 h-4 text-violet-400" />
-            <span>Real-time Clock</span>
-          </div>
-          <p className="text-3xl font-extrabold text-white font-mono tracking-tight">{formattedTime}</p>
-          <p className="text-xs text-slate-400 font-medium">{formattedDate}</p>
-        </div>
-
+        
+        {/* Left Side: Current State and Punch Buttons */}
         <div className="flex items-center gap-4 bg-slate-950/40 border border-slate-800/80 rounded-xl px-5 py-3.5 shrink-0">
           <div className="space-y-0.5">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Current State</span>
             <div className="flex items-center gap-2">
               <span className={`w-2 h-2 rounded-full ${isClockedIn ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`} />
               <span className="text-sm font-bold text-slate-200">
-                {isClockedIn ? 'Clocked In' : 'Not Clocked In'}
+                {isClockedIn ? 'Punched In' : 'Not Punched In'}
               </span>
             </div>
             {isClockedIn && activeLog?.punchIn?.time && (
@@ -194,10 +187,21 @@ export default function PunchPanel({ logs, refetch }) {
                   : 'bg-violet-600 hover:bg-violet-500 text-white border border-violet-500/20'
               }`}
             >
-              {isClockedIn ? 'Clock Out' : 'Clock In'}
+              {isClockedIn ? 'Punch Out' : 'Punch In'}
             </button>
           )}
         </div>
+
+        {/* Right Side: Real-time Clock */}
+        <div className="space-y-1 md:text-right">
+          <div className="flex items-center md:justify-end gap-2 text-slate-400 text-sm font-semibold uppercase tracking-wider">
+            <Clock className="w-4 h-4 text-violet-400" />
+            <span>Real-time Clock</span>
+          </div>
+          <p className="text-3xl font-extrabold text-white font-mono tracking-tight">{formattedTime}</p>
+          <p className="text-xs text-slate-400 font-medium">{formattedDate}</p>
+        </div>
+
       </div>
 
       {cameraActive && (

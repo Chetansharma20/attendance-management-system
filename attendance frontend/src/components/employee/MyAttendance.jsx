@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useGetMyAttendanceQuery } from '../../redux/api/attendanceApi.js';
 import PunchPanel from './PunchPanel.jsx';
@@ -10,7 +10,6 @@ import {
   RefreshCw,
   AlertCircle,
   Clock,
-  TrendingUp,
   CalendarDays,
   ChevronDown,
   ChevronUp,
@@ -38,14 +37,8 @@ export default function MyAttendance() {
 
   const logs = attendanceResponse?.data || [];
 
-  // Compute stats from attendance data
-  const stats = useMemo(() => {
-    if (logs.length === 0) return { totalHours: 0, daysWorked: 0, avgHours: 0, completedDays: 0 };
-    const totalHours = logs.reduce((sum, log) => sum + (log.workingHours || 0), 0);
-    const daysWorked = logs.length;
-    const completedDays = logs.filter((l) => l.completionStatus === 'completed').length;
-    const avgHours = daysWorked > 0 ? totalHours / daysWorked : 0;
-    return { totalHours, daysWorked, avgHours, completedDays };
+  const totalHours = useMemo(() => {
+    return logs.reduce((sum, log) => sum + (log.workingHours || 0), 0);
   }, [logs]);
 
   const formatDate = (dateStr) => {
@@ -115,36 +108,15 @@ export default function MyAttendance() {
         <PunchPanel logs={logs} refetch={refetch} />
       )}
 
-      {/* Stats Cards */}
+      {/* Stats Card (Working Hours only) */}
       {!isLoading && !isError && logs.length > 0 && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="flex">
           <StatCard
             icon={Clock}
-            label="Total Hours Worked"
-            value={`${stats.totalHours.toFixed(1)}h`}
-            subValue="all time"
+            label="Total Working Hours"
+            value={`${totalHours.toFixed(2)}h`}
+            subValue="cumulative shift duration"
             color="violet"
-          />
-          <StatCard
-            icon={CalendarDays}
-            label="Days Worked"
-            value={stats.daysWorked}
-            subValue="total logs"
-            color="sky"
-          />
-          <StatCard
-            icon={TrendingUp}
-            label="Avg Daily Hours"
-            value={`${stats.avgHours.toFixed(1)}h`}
-            subValue="per day"
-            color="emerald"
-          />
-          <StatCard
-            icon={Timer}
-            label="Completed Days"
-            value={stats.completedDays}
-            subValue={`of ${stats.daysWorked} logged`}
-            color="amber"
           />
         </div>
       )}

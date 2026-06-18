@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useLogoutMutation } from '../../redux/api/authApi.js';
@@ -11,10 +11,35 @@ import MyAttendance from '../../components/employee/MyAttendance.jsx';
 import MyOvertimeRequests from '../../components/employee/MyOvertimeRequests.jsx';
 import { LogOut, Clock } from 'lucide-react';
 
+// Reusable Tab Bar component
+function TabBar({ tabs, active, onChange }) {
+  return (
+    <div className="flex flex-wrap gap-1 bg-slate-900 border border-slate-800/80 p-1 rounded-xl shrink-0 self-start sm:self-auto">
+      {tabs.map((tab) => (
+        <button
+          key={tab.id}
+          onClick={() => onChange(tab.id)}
+          className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+            active === tab.id
+              ? 'bg-violet-600 text-white shadow-md'
+              : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
   const [logout, { isLoading: isLoggingOut }] = useLogoutMutation();
+
+  const [adminTab, setAdminTab] = useState('users');
+  const [managerTab, setManagerTab] = useState('team');
+  const [employeeTab, setEmployeeTab] = useState('attendance');
 
   const isAdmin = user?.role === 'admin';
   const isManager = user?.role === 'manager';
@@ -31,6 +56,23 @@ export default function Dashboard() {
   if (!user) {
     return null;
   }
+
+  const adminTabs = [
+    { id: 'users',      label: 'Manage Employees' },
+    { id: 'attendance', label: 'Attendance Records' },
+    { id: 'overtime',   label: 'Overtime Requests' },
+  ];
+
+  const managerTabs = [
+    { id: 'team',       label: 'My Team' },
+    { id: 'attendance', label: 'Team Attendance' },
+    { id: 'overtime',   label: 'Overtime Requests' },
+  ];
+
+  const employeeTabs = [
+    { id: 'attendance', label: 'Punch & Attendance' },
+    { id: 'overtime',   label: 'Overtime Requests' },
+  ];
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
@@ -75,40 +117,69 @@ export default function Dashboard() {
 
       {/* Main Content Area based on User Role */}
       {isAdmin ? (
-        <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-10 z-10">
-          <UsersList />
-          <AttendanceLogs />
-          <PendingOvertime />
-        </main>
-      ) : isManager ? (
-        <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-10 z-10">
-          <MyTeam />
-          <TeamAttendance />
-          <PendingOvertime />
-        </main>
-      ) : (
-        /* Employee Dashboard */
-        <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-10 z-10">
-          {/* Welcome Banner */}
-          <div className="bg-gradient-to-r from-violet-600/10 via-sky-600/10 to-transparent border border-violet-500/20 rounded-2xl px-6 py-5 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-violet-500/20 border border-violet-500/30 flex items-center justify-center shrink-0">
-              <Clock className="w-6 h-6 text-violet-400" />
-            </div>
+        <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-8 z-10">
+          {/* Admin Header + Tabs */}
+          <div className="border-b border-slate-800/60 pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-lg font-bold text-white">
-                Welcome back, <span className="text-violet-400">{user.name}</span> 👋
-              </h1>
-              <p className="text-sm text-slate-400 mt-0.5">
-                Track your attendance, view your working hours, and manage overtime requests below.
+              <h2 className="text-2xl font-bold tracking-tight text-white">
+                Admin Control Center
+              </h2>
+              <p className="text-sm text-slate-400 mt-1">
+                Manage users, view all attendance records, and handle overtime requests.
               </p>
             </div>
+            <TabBar tabs={adminTabs} active={adminTab} onChange={setAdminTab} />
           </div>
 
-          {/* Personal Attendance Logs + Stats */}
-          <MyAttendance />
+          {/* Admin Tab Content */}
+          {adminTab === 'users' && <UsersList />}
+          {adminTab === 'attendance' && <AttendanceLogs />}
+          {adminTab === 'overtime' && <PendingOvertime />}
+        </main>
 
-          {/* Personal Overtime Requests */}
-          <MyOvertimeRequests />
+      ) : isManager ? (
+        <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-8 z-10">
+          {/* Manager Header + Tabs */}
+          <div className="border-b border-slate-800/60 pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight text-white">
+                Manager Dashboard
+              </h2>
+              <p className="text-sm text-slate-400 mt-1">
+                View your team's attendance, manage members, and handle overtime requests.
+              </p>
+            </div>
+            <TabBar tabs={managerTabs} active={managerTab} onChange={setManagerTab} />
+          </div>
+
+          {/* Manager Tab Content */}
+          {managerTab === 'team' && <MyTeam />}
+          {managerTab === 'attendance' && <TeamAttendance />}
+          {managerTab === 'overtime' && <PendingOvertime />}
+        </main>
+
+      ) : (
+        /* Employee Dashboard */
+        <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-8 z-10">
+          {/* Employee Header + Tabs */}
+          <div className="border-b border-slate-800/60 pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight text-white">
+                Welcome back, <span className="bg-gradient-to-r from-violet-400 to-sky-400 bg-clip-text text-transparent">{user.name}</span> 👋
+              </h2>
+              <p className="text-sm text-slate-400 mt-1">
+                Track your attendance, working hours, and manage overtime requests.
+              </p>
+            </div>
+            <TabBar tabs={employeeTabs} active={employeeTab} onChange={setEmployeeTab} />
+          </div>
+
+          {/* Employee Tab Content */}
+          {employeeTab === 'attendance' ? (
+            <MyAttendance />
+          ) : (
+            <MyOvertimeRequests />
+          )}
         </main>
       )}
 
@@ -119,3 +190,4 @@ export default function Dashboard() {
     </div>
   );
 }
+

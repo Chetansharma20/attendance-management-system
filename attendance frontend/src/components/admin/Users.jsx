@@ -52,8 +52,8 @@ export default function UsersList() {
               <Users className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">Users Directory</h2>
-              <p className="text-xs text-slate-400">All registered system users</p>
+              <h2 className="text-xl font-bold text-white">Employee Directory</h2>
+              <p className="text-xs text-slate-400">All registered employees and managers</p>
             </div>
           </div>
 
@@ -87,7 +87,7 @@ export default function UsersList() {
               className="inline-flex items-center gap-2 bg-violet-600 hover:bg-violet-500 text-white font-semibold text-sm px-4 py-2 rounded-xl transition-colors cursor-pointer shadow-md shadow-violet-900/30"
             >
               <UserPlus className="w-4 h-4" />
-              <span>Add User</span>
+              <span>Add Employee</span>
             </button>
           </div>
         </div>

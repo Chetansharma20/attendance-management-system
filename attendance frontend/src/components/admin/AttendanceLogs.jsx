@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useGetAllAttendanceQuery, useValidateAttendanceMutation } from '../../redux/api/attendanceApi.js';
-import { Calendar, RefreshCw, AlertCircle, Eye, EyeOff, UserCheck, X } from 'lucide-react';
+import { Calendar, RefreshCw, AlertCircle, UserCheck, X } from 'lucide-react';
 import DailyReportModal from '../common/DailyReportModal.jsx';
 import Pagination from '../common/Pagination.jsx';
 import AttendanceVerificationDetails from '../common/AttendanceVerificationDetails.jsx';
@@ -178,10 +178,13 @@ export default function AttendanceLogs() {
                       <td className="py-4 px-5 text-center">
                         <button
                           onClick={() => toggleExpand(log._id)}
-                          className="p-1 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
-                          title="View Verification Details"
+                          className={`text-xs font-semibold px-2.5 py-1 rounded-lg border transition-colors cursor-pointer ${
+                            isExpanded
+                              ? 'bg-slate-700 text-slate-200 border-slate-600 hover:bg-slate-600'
+                              : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700 hover:text-white'
+                          }`}
                         >
-                          {isExpanded ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          {isExpanded ? 'Hide' : 'View Details'}
                         </button>
                       </td>
                       <td className="py-4 px-5 text-center">
