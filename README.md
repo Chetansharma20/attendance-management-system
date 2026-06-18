@@ -40,18 +40,23 @@ A modern, full-stack Attendance Management System that tracks employee attendanc
 * **Exportable PDF Reports**: Generates customized daily reports with formatting including selfies, locations, names, working hours, and validation statuses.
 * **Access Control**: Role-filtered exports (Employees get their own, Managers get team data, Admins get system-wide data).
 
+### 8. Premium UI Styling & Theme Customization
+* **Vibrant Glassmorphism Design**: Sleek dark and light mode UI with smooth CSS variable-based styling, gradients, and micro-animations.
+* **Light / Dark Mode Toggle**: Live theme toggle in header nav and login screen persisting settings in local storage.
+
 ---
 
 ## 🏗️ Architecture Overview
 
 ```
 attendance-management-system/
-├── attendance/                # Frontend React application (Vite, Tailwind CSS, RTK Query)
+├── attendance frontend/       # Frontend React application (Vite, Tailwind CSS, RTK Query)
 │   ├── src/
 │   │   ├── components/        # Reusable UI components (PunchPanel, StatCard, etc.)
 │   │   ├── pages/             # Route pages (Dashboard, Login, Signup)
 │   │   ├── redux/             # Redux Store and RTK Query APIs
 │   │   └── routes/            # Route protections
+│   │   └── context/           # Theme toggle context & hooks
 └── attendance backend/        # Backend REST API (NodeJS, Express, MongoDB, Mongoose)
     ├── src/
     │   ├── controllers/       # Route request handlers
@@ -81,9 +86,9 @@ attendance-management-system/
 4. Run in dev mode: `npm run dev`
 
 ### Frontend Configuration
-1. Open the directory: `cd attendance`
+1. Open the directory: `cd "attendance frontend"`
 2. Install dependencies: `npm install`
-3. Create a `.env` file in `attendance/` with the following variable:
+3. Create a `.env` file in `attendance frontend/` with the following variable:
    ```env
    VITE_API_BASE_URL=http://localhost:5000/api/v1
    ```
@@ -95,4 +100,4 @@ attendance-management-system/
 1. **Camera Permission**: The application assumes the client browser has given permission to access the webcam for live selfies.
 2. **Standard Shift Definition**: The standard shift duration is fixed at 8 hours as per the assessment instructions.
 3. **Retrospective Overtime**: Employees can only request overtime retrospectively after completing a full shift, avoiding concurrent active timer complications.
-# attendance-management-system
+4. **Theme Preference**: The system defaults to dark mode upon first launch and caches user preference in local storage.
