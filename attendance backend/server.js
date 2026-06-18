@@ -23,17 +23,16 @@ server.use(cors({
 server.use(express.json());
 server.use(cookieParser());
 
-// Setup logging middleware (Console + access.log file)
 setupLogger(server);
 
-// Routes
+
 server.use('/api/v1', apiRouter);
 
 server.get('/', (req, res) => {
   res.send('Hello world');
 });
 
-// Global Error Handler
+
 server.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
