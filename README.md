@@ -2,6 +2,11 @@
 
 A modern, full-stack Attendance Management System that tracks employee attendance using location coordinates and live photo verification, utilizing role-based access control (RBAC), and basic workflow management (overtime & validation requests).
 
+### 🔑 Default Admin Credentials
+For testing the system with administrative privileges, use the following credentials:
+* **Email / ID**: `admin@gmail.com`
+* **Password**: `12345`
+
 ---
 
 ## 🚀 Features Implemented
