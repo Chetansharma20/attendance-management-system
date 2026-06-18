@@ -26,7 +26,7 @@ if (process.env.CLIENT_URL) {
 
 server.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (e.g. mobile apps, curl, Postman)
+
     if (!origin) return callback(null, true);
 
     // Allow any vercel.app subdomain for this project

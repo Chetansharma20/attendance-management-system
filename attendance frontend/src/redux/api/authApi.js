@@ -1,5 +1,5 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
-import { setUser, clearUser } from '../slices/authSlice.js';
+import { setUser, clearUser, setAccessToken } from '../slices/authSlice.js';
 import { baseQueryWithReauth } from '../baseQuery.js';
 
 export const authApi = createApi({
@@ -19,9 +19,9 @@ export const authApi = createApi({
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          dispatch(setUser(data.data.user));
+          dispatch(setUser({ user: data.data.user, accessToken: data.data.accessToken }));
         } catch {
-          // error handled by component via isError
+          
         }
       },
     }),

@@ -1,11 +1,19 @@
 import { fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { clearUser } from './slices/authSlice.js';
+import { clearUser, setAccessToken } from './slices/authSlice.js';
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1';
 
 const rawBaseQuery = fetchBaseQuery({
   baseUrl,
   credentials: 'include',
+  // Attach token from Redux state as Authorization header on every request
+  prepareHeaders: (headers, { getState }) => {
+    const token = getState().auth.accessToken;
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`);
+    }
+    return headers;
+  },
 });
 
 // Mutex-like variable to track active refresh requests and avoid duplicate refreshes
@@ -44,6 +52,11 @@ export const baseQueryWithReauth = async (args, api, extraOptions) => {
         );
 
         if (refreshResult.data) {
+          // Save the new access token into Redux store
+          const newToken = refreshResult.data?.data?.accessToken;
+          if (newToken) {
+            api.dispatch(setAccessToken(newToken));
+          }
           isRefreshing = false;
           onTokenRefreshed();
           // Retry the original request
