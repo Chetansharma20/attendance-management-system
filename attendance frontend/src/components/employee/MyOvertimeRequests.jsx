@@ -99,69 +99,113 @@ export default function MyOvertimeRequests() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-theme-border bg-theme-bg/30">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-theme-border text-xs font-semibold text-theme-muted uppercase tracking-wider bg-theme-card-hover/50">
-                  <th className="py-4 px-5">Submitted On</th>
-                  <th className="py-4 px-5">Requested Hours</th>
-                  <th className="py-4 px-5">Reason</th>
-                  <th className="py-4 px-5">Status</th>
-                  <th className="py-4 px-5">Details</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-theme-border/60 text-sm">
-                {requests.map((req) => (
-                  <tr key={req._id} className="hover:bg-theme-card-hover/50 transition-colors">
-                    {/* Submitted On */}
-                    <td className="py-4 px-5 text-theme-text">
-                      {formatDate(req.createdAt)}
-                    </td>
-
-                    {/* Requested Hours */}
-                    <td className="py-4 px-5">
-                      <span className="inline-flex items-center gap-1.5 font-bold font-mono text-theme-bright text-base">
-                        <Timer className="w-4 h-4 text-violet-600 dark:text-violet-400" />
-                        {req.requestedHours} hr{req.requestedHours !== 1 ? 's' : ''}
-                      </span>
-                    </td>
-
-                    {/* Reason */}
-                    <td className="py-4 px-5 text-theme-text italic max-w-xs">
-                      <span
-                        className="block truncate max-w-[200px]"
-                        title={req.reason}
-                      >
-                        "{req.reason}"
-                      </span>
-                    </td>
-
-                    {/* Status Badge */}
-                    <td className="py-4 px-5">
-                      <StatusBadge status={req.status} />
-                    </td>
-
-                    {/* Details: rejection reason or approval info */}
-                    <td className="py-4 px-5">
-                      {req.status === 'rejected' && req.rejectionReason ? (
-                        <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 max-w-[200px]">
-                          <p className="text-xs text-red-650 dark:text-red-400 font-semibold mb-0.5">Rejection Reason:</p>
-                          <p className="text-xs text-red-600 dark:text-red-300">{req.rejectionReason}</p>
-                        </div>
-                      ) : req.status === 'approved' && req.approvedAt ? (
-                        <div className="text-xs text-emerald-600 dark:text-emerald-400">
-                          <p className="font-semibold">Approved</p>
-                          <p className="text-theme-muted">{formatDateTime(req.approvedAt)}</p>
-                        </div>
-                      ) : (
-                        <span className="text-theme-muted text-xs">—</span>
-                      )}
-                    </td>
+          <>
+            <div className="hidden md:block overflow-x-auto rounded-xl border border-theme-border bg-theme-bg/30">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-theme-border text-xs font-semibold text-theme-muted uppercase tracking-wider bg-theme-card-hover/50">
+                    <th className="py-4 px-5">Submitted On</th>
+                    <th className="py-4 px-5">Requested Hours</th>
+                    <th className="py-4 px-5">Reason</th>
+                    <th className="py-4 px-5">Status</th>
+                    <th className="py-4 px-5">Details</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-theme-border/60 text-sm">
+                  {requests.map((req) => (
+                    <tr key={req._id} className="hover:bg-theme-card-hover/50 transition-colors">
+                      {/* Submitted On */}
+                      <td className="py-4 px-5 text-theme-text">
+                        {formatDate(req.createdAt)}
+                      </td>
+
+                      {/* Requested Hours */}
+                      <td className="py-4 px-5">
+                        <span className="inline-flex items-center gap-1.5 font-bold font-mono text-theme-bright text-base">
+                          <Timer className="w-4 h-4 text-violet-600 dark:text-violet-400" />
+                          {req.requestedHours} hr{req.requestedHours !== 1 ? 's' : ''}
+                        </span>
+                      </td>
+
+                      {/* Reason */}
+                      <td className="py-4 px-5 text-theme-text italic max-w-xs">
+                        <span
+                          className="block truncate max-w-[200px]"
+                          title={req.reason}
+                        >
+                          "{req.reason}"
+                        </span>
+                      </td>
+
+                      {/* Status Badge */}
+                      <td className="py-4 px-5">
+                        <StatusBadge status={req.status} />
+                      </td>
+
+                      {/* Details: rejection reason or approval info */}
+                      <td className="py-4 px-5">
+                        {req.status === 'rejected' && req.rejectionReason ? (
+                          <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 max-w-[200px]">
+                            <p className="text-xs text-red-650 dark:text-red-400 font-semibold mb-0.5">Rejection Reason:</p>
+                            <p className="text-xs text-red-600 dark:text-red-300">{req.rejectionReason}</p>
+                          </div>
+                        ) : req.status === 'approved' && req.approvedAt ? (
+                          <div className="text-xs text-emerald-600 dark:text-emerald-400">
+                            <p className="font-semibold">Approved</p>
+                            <p className="text-theme-muted">{formatDateTime(req.approvedAt)}</p>
+                          </div>
+                        ) : (
+                          <span className="text-theme-muted text-xs">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card List */}
+            <div className="md:hidden space-y-4">
+              {requests.map((req) => (
+                <div key={req._id} className="bg-theme-bg/20 border border-theme-border rounded-xl p-4 space-y-3 transition-colors duration-200">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-theme-muted font-medium">Submitted: {formatDate(req.createdAt)}</span>
+                    <StatusBadge status={req.status} />
+                  </div>
+
+                  <div className="flex items-center justify-between py-1">
+                    <span className="text-xs text-theme-muted font-medium">Hours:</span>
+                    <span className="inline-flex items-center gap-1.5 font-bold font-mono text-theme-bright text-sm">
+                      <Timer className="w-3.5 h-3.5 text-violet-600 dark:text-violet-400" />
+                      {req.requestedHours} hr{req.requestedHours !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+
+                  <div className="text-xs text-theme-text italic bg-theme-card/30 border border-theme-border/60 rounded-lg p-2.5">
+                    "{req.reason}"
+                  </div>
+
+                  {/* Details Section */}
+                  {(req.status === 'rejected' && req.rejectionReason) || (req.status === 'approved' && req.approvedAt) ? (
+                    <div className="border-t border-theme-border/60 pt-2.5 text-xs">
+                      {req.status === 'rejected' && req.rejectionReason && (
+                        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-2.5">
+                          <p className="font-semibold text-red-650 dark:text-red-400 mb-0.5">Rejection Reason:</p>
+                          <p className="text-red-600 dark:text-red-305">{req.rejectionReason}</p>
+                        </div>
+                      )}
+                      {req.status === 'approved' && req.approvedAt && (
+                        <div className="flex justify-between items-center text-emerald-650 dark:text-emerald-455 font-medium">
+                          <span>Approved At:</span>
+                          <span>{formatDateTime(req.approvedAt)}</span>
+                        </div>
+                      )}
+                    </div>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </section>

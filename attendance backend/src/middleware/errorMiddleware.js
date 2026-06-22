@@ -10,8 +10,6 @@ export const errorHandler = (err, req, res, next) => {
       .join(", ");
   }
 
-  
-
   res.status(statusCode).json({
     success: false,
     statusCode,

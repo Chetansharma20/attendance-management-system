@@ -9,18 +9,19 @@ import PendingOvertime from '../../components/manager/PendingOvertime.jsx';
 import MyTeam from '../../components/manager/MyTeam.jsx';
 import MyAttendance from '../../components/employee/MyAttendance.jsx';
 import MyOvertimeRequests from '../../components/employee/MyOvertimeRequests.jsx';
+import AdminSettings from '../../components/admin/AdminSettings.jsx';
 import { LogOut, Clock, Sun, Moon } from 'lucide-react';
 import { ThemeContext } from '../../context/ThemeContext.jsx';
 
 // Reusable Tab Bar component
 function TabBar({ tabs, active, onChange }) {
   return (
-    <div className="flex flex-wrap gap-1 bg-theme-card border border-theme-border p-1 rounded-xl shrink-0 self-start sm:self-auto transition-colors duration-200">
+    <div className="flex flex-nowrap overflow-x-auto gap-1 bg-theme-card border border-theme-border p-1 rounded-xl max-w-full [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden shrink-0 self-start sm:self-auto transition-colors duration-200">
       {tabs.map((tab) => (
         <button
           key={tab.id}
           onClick={() => onChange(tab.id)}
-          className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+          className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap ${
             active === tab.id
               ? 'bg-violet-600 text-white shadow-md'
               : 'text-theme-muted hover:text-theme-bright'
@@ -63,6 +64,7 @@ export default function Dashboard() {
     { id: 'users',      label: 'Manage Employees' },
     { id: 'attendance', label: 'Attendance Records' },
     { id: 'overtime',   label: 'Overtime Requests' },
+    { id: 'settings',   label: 'Geofence Settings' },
   ];
 
   const managerTabs = [
@@ -86,11 +88,11 @@ export default function Dashboard() {
       </div>
 
       {/* Top Navbar */}
-      <header className="border-b border-theme-border bg-theme-header backdrop-blur-md sticky top-0 z-20 px-6 py-4 transition-colors duration-200">
+      <header className="border-b border-theme-border bg-theme-header backdrop-blur-md sticky top-0 z-20 px-4 sm:px-6 py-3 sm:py-4 transition-colors duration-200">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-violet-600/10 dark:bg-violet-600/20 border border-violet-500/20 dark:border-violet-500/30 rounded-xl flex items-center justify-center">
-              <Clock className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+              <Clock className="w-5 h-5 text-violet-650 dark:text-violet-400" />
             </div>
             <div>
               <h1 className="text-xl font-bold tracking-tight text-theme-bright">Attendance Portal</h1>
@@ -133,7 +135,7 @@ export default function Dashboard() {
 
       {/* Main Content Area based on User Role */}
       {isAdmin ? (
-        <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-8 z-10">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8 z-10">
           {/* Admin Header + Tabs */}
           <div className="border-b border-theme-border pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
@@ -151,10 +153,11 @@ export default function Dashboard() {
           {adminTab === 'users' && <UsersList />}
           {adminTab === 'attendance' && <AttendanceLogs />}
           {adminTab === 'overtime' && <PendingOvertime />}
+          {adminTab === 'settings' && <AdminSettings />}
         </main>
 
       ) : isManager ? (
-        <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-8 z-10">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8 z-10">
           {/* Manager Header + Tabs */}
           <div className="border-b border-theme-border pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
@@ -176,7 +179,7 @@ export default function Dashboard() {
 
       ) : (
         /* Employee Dashboard */
-        <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8 space-y-8 z-10">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8 z-10">
           {/* Employee Header + Tabs */}
           <div className="border-b border-theme-border pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>

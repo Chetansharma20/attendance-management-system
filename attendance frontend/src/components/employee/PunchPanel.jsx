@@ -160,8 +160,8 @@ export default function PunchPanel({ logs, refetch }) {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         
         {/* Left Side: Current State and Punch Buttons */}
-        <div className="flex items-center gap-4 bg-theme-bg border border-theme-border rounded-xl px-5 py-3.5 shrink-0 transition-colors duration-200">
-          <div className="space-y-0.5">
+        <div className="flex flex-row flex-wrap sm:flex-nowrap items-center justify-between sm:justify-start gap-4 bg-theme-bg border border-theme-border rounded-xl px-5 py-3.5 w-full sm:w-auto transition-colors duration-200">
+          <div className="space-y-0.5 min-w-[120px]">
             <span className="text-[10px] font-bold text-theme-muted uppercase tracking-widest block font-sans">Current State</span>
             <div className="flex items-center gap-2">
               <span className={`w-2 h-2 rounded-full ${isClockedIn ? 'bg-emerald-400 animate-pulse' : 'bg-slate-400'}`} />
@@ -181,7 +181,7 @@ export default function PunchPanel({ logs, refetch }) {
               onClick={startCamera}
               className={`px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shadow-md cursor-pointer hover:scale-[1.02] ${
                 isClockedIn
-                  ? 'bg-red-600 hover:bg-red-505 text-white shadow-red-950/20'
+                  ? 'bg-red-600 hover:bg-red-500 text-white shadow-red-950/20'
                   : 'bg-violet-600 hover:bg-violet-500 text-white shadow-violet-950/20'
               }`}
             >

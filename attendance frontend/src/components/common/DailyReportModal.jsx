@@ -129,134 +129,218 @@ export default function DailyReportModal({ isOpen, onClose, logs, title, isSingl
               <p className="text-theme-muted/70 text-xs mt-1">Please select another date from the controls above.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-theme-border print:border-none bg-theme-bg/25">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-theme-border text-xs font-semibold text-theme-muted uppercase tracking-wider bg-theme-card-hover/50 print:bg-slate-100">
-                    {!isSingleEmployee && <th className="py-3 px-4">Employee</th>}
-                    <th className="py-3 px-4">Punch In</th>
-                    <th className="py-3 px-4 text-center">In Selfie</th>
-                    <th className="py-3 px-4">In Location</th>
-                    <th className="py-3 px-4">Punch Out</th>
-                    <th className="py-3 px-4 text-center">Out Selfie</th>
-                    <th className="py-3 px-4">Out Location</th>
-                    <th className="py-3 px-4 text-right">Hours</th>
-                    <th className="py-3 px-4 text-center">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-theme-border/60 text-sm">
-                  {filteredLogs.map((log) => {
-                    const empName = log.employeeId?.name || employeeName || 'Unknown';
-                    const empEmail = log.employeeId?.email || '';
+            <>
+              <div className="hidden lg:block print:block overflow-x-auto rounded-xl border border-theme-border print:border-none bg-theme-bg/25">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-theme-border text-xs font-semibold text-theme-muted uppercase tracking-wider bg-theme-card-hover/50 print:bg-slate-100">
+                      {!isSingleEmployee && <th className="py-3 px-4">Employee</th>}
+                      <th className="py-3 px-4">Punch In</th>
+                      <th className="py-3 px-4 text-center">In Selfie</th>
+                      <th className="py-3 px-4">In Location</th>
+                      <th className="py-3 px-4">Punch Out</th>
+                      <th className="py-3 px-4 text-center">Out Selfie</th>
+                      <th className="py-3 px-4">Out Location</th>
+                      <th className="py-3 px-4 text-right">Hours</th>
+                      <th className="py-3 px-4 text-center">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-theme-border/60 text-sm">
+                    {filteredLogs.map((log) => {
+                      const empName = log.employeeId?.name || employeeName || 'Unknown';
+                      const empEmail = log.employeeId?.email || '';
 
-                    return (
-                      <tr key={log._id} className="hover:bg-theme-card-hover/30 transition-colors">
+                      return (
+                        <tr key={log._id} className="hover:bg-theme-card-hover/30 transition-colors">
 
-                        {/* Employee Name & Email */}
-                        {!isSingleEmployee && (
-                          <td className="py-4 px-4 align-middle">
-                            <p className="font-semibold text-theme-bright print:text-black">{empName}</p>
-                            <p className="text-xs text-theme-muted print:text-slate-650">{empEmail}</p>
+                          {/* Employee Name & Email */}
+                          {!isSingleEmployee && (
+                            <td className="py-4 px-4 align-middle">
+                              <p className="font-semibold text-theme-bright print:text-black">{empName}</p>
+                              <p className="text-xs text-theme-muted print:text-slate-650">{empEmail}</p>
+                            </td>
+                          )}
+
+                          {/* Punch In Time */}
+                          <td className="py-4 px-4 align-middle font-mono text-xs text-theme-text print:text-black">
+                            {log.punchIn?.time ? new Date(log.punchIn.time).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '-'}
                           </td>
-                        )}
 
-                        {/* Punch In Time */}
-                        <td className="py-4 px-4 align-middle font-mono text-xs text-theme-text print:text-black">
-                          {log.punchIn?.time ? new Date(log.punchIn.time).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '-'}
-                        </td>
+                          {/* Punch In Selfie */}
+                          <td className="py-4 px-4 align-middle text-center">
+                            {log.punchIn?.selfieUrl ? (
+                              <img
+                                src={log.punchIn.selfieUrl}
+                                alt="In Selfie"
+                                className="w-16 h-12 object-cover rounded border border-theme-border mx-auto"
+                              />
+                            ) : (
+                              <span className="text-xs text-theme-muted italic">-</span>
+                            )}
+                          </td>
 
-                        {/* Punch In Selfie */}
-                        <td className="py-4 px-4 align-middle text-center">
-                          {log.punchIn?.selfieUrl ? (
-                            <img
-                              src={log.punchIn.selfieUrl}
-                              alt="In Selfie"
-                              className="w-16 h-12 object-cover rounded border border-theme-border mx-auto"
-                            />
-                          ) : (
-                            <span className="text-xs text-theme-muted italic">-</span>
-                          )}
-                        </td>
+                          {/* Punch In Location */}
+                          <td className="py-4 px-4 align-middle text-xs font-mono text-theme-text print:text-black">
+                            {log.punchIn?.location?.latitude ? (
+                              <div className="flex items-center gap-1.5">
+                                <MapPin className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0 print:hidden" />
+                                <span>{log.punchIn.location.latitude.toFixed(4)}, {log.punchIn.location.longitude.toFixed(4)}</span>
+                                <a
+                                  href={`https://www.google.com/maps?q=${log.punchIn.location.latitude},${log.punchIn.location.longitude}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-violet-650 dark:text-violet-400 hover:text-violet-500 inline-flex items-center gap-0.5 ml-1 transition-colors print:hidden"
+                                >
+                                  <ExternalLink className="w-3 h-3" />
+                                </a>
+                              </div>
+                            ) : (
+                              <span className="italic text-theme-muted">-</span>
+                            )}
+                          </td>
 
-                        {/* Punch In Location */}
-                        <td className="py-4 px-4 align-middle text-xs font-mono text-theme-text print:text-black">
-                          {log.punchIn?.location?.latitude ? (
-                            <div className="flex items-center gap-1.5">
-                              <MapPin className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0 print:hidden" />
-                              <span>{log.punchIn.location.latitude.toFixed(4)}, {log.punchIn.location.longitude.toFixed(4)}</span>
-                              <a
-                                href={`https://www.google.com/maps?q=${log.punchIn.location.latitude},${log.punchIn.location.longitude}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-violet-650 dark:text-violet-400 hover:text-violet-500 inline-flex items-center gap-0.5 ml-1 transition-colors print:hidden"
-                              >
-                                <ExternalLink className="w-3 h-3" />
-                              </a>
-                            </div>
-                          ) : (
-                            <span className="italic text-theme-muted">-</span>
-                          )}
-                        </td>
+                          {/* Punch Out Time */}
+                          <td className="py-4 px-4 align-middle font-mono text-xs text-theme-text print:text-black">
+                            {log.punchOut?.time ? new Date(log.punchOut.time).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '-'}
+                          </td>
 
-                        {/* Punch Out Time */}
-                        <td className="py-4 px-4 align-middle font-mono text-xs text-theme-text print:text-black">
-                          {log.punchOut?.time ? new Date(log.punchOut.time).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '-'}
-                        </td>
+                          {/* Punch Out Selfie */}
+                          <td className="py-4 px-4 align-middle text-center">
+                            {log.punchOut?.selfieUrl ? (
+                              <img
+                                src={log.punchOut.selfieUrl}
+                                alt="Out Selfie"
+                                className="w-16 h-12 object-cover rounded border border-theme-border mx-auto"
+                              />
+                            ) : (
+                              <span className="text-xs text-theme-muted italic">-</span>
+                            )}
+                          </td>
 
-                        {/* Punch Out Selfie */}
-                        <td className="py-4 px-4 align-middle text-center">
-                          {log.punchOut?.selfieUrl ? (
-                            <img
-                              src={log.punchOut.selfieUrl}
-                              alt="Out Selfie"
-                              className="w-16 h-12 object-cover rounded border border-theme-border mx-auto"
-                            />
-                          ) : (
-                            <span className="text-xs text-theme-muted italic">-</span>
-                          )}
-                        </td>
+                          {/* Punch Out Location */}
+                          <td className="py-4 px-4 align-middle text-xs font-mono text-theme-text print:text-black">
+                            {log.punchOut?.location?.latitude ? (
+                              <div className="flex items-center gap-1.5">
+                                <MapPin className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0 print:hidden" />
+                                <span>{log.punchOut.location.latitude.toFixed(4)}, {log.punchOut.location.longitude.toFixed(4)}</span>
+                                <a
+                                  href={`https://www.google.com/maps?q=${log.punchOut.location.latitude},${log.punchOut.location.longitude}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-violet-650 dark:text-violet-400 hover:text-violet-500 inline-flex items-center gap-0.5 ml-1 transition-colors print:hidden"
+                                >
+                                  <ExternalLink className="w-3 h-3" />
+                                </a>
+                              </div>
+                            ) : (
+                              <span className="italic text-theme-muted">-</span>
+                            )}
+                          </td>
 
-                        {/* Punch Out Location */}
-                        <td className="py-4 px-4 align-middle text-xs font-mono text-theme-text print:text-black">
-                          {log.punchOut?.location?.latitude ? (
-                            <div className="flex items-center gap-1.5">
-                              <MapPin className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0 print:hidden" />
-                              <span>{log.punchOut.location.latitude.toFixed(4)}, {log.punchOut.location.longitude.toFixed(4)}</span>
-                              <a
-                                href={`https://www.google.com/maps?q=${log.punchOut.location.latitude},${log.punchOut.location.longitude}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-violet-650 dark:text-violet-400 hover:text-violet-500 inline-flex items-center gap-0.5 ml-1 transition-colors print:hidden"
-                              >
-                                <ExternalLink className="w-3 h-3" />
-                              </a>
-                            </div>
-                          ) : (
-                            <span className="italic text-theme-muted">-</span>
-                          )}
-                        </td>
+                          {/* Working Hours */}
+                          <td className="py-4 px-4 align-middle text-right font-mono font-semibold text-theme-bright print:text-black">
+                            {log.workingHours ? `${log.workingHours.toFixed(2)}h` : '-'}
+                          </td>
 
-                        {/* Working Hours */}
-                        <td className="py-4 px-4 align-middle text-right font-mono font-semibold text-theme-bright print:text-black">
-                          {log.workingHours ? `${log.workingHours.toFixed(2)}h` : '-'}
-                        </td>
+                          {/* Status */}
+                          <td className="py-4 px-4 align-middle text-center">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${log.completionStatus === 'completed'
+                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                                : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                              }`}>
+                              {log.completionStatus || 'incomplete'}
+                            </span>
+                          </td>
 
-                        {/* Status */}
-                        <td className="py-4 px-4 align-middle text-center">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${log.completionStatus === 'completed'
-                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-                              : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
-                            }`}>
-                            {log.completionStatus || 'incomplete'}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Card List */}
+              <div className="lg:hidden print:hidden space-y-4">
+                {filteredLogs.map((log) => {
+                  const empName = log.employeeId?.name || employeeName || 'Unknown';
+                  const empEmail = log.employeeId?.email || '';
+
+                  return (
+                    <div key={log._id} className="bg-theme-bg/25 border border-theme-border rounded-xl p-4 space-y-4 transition-colors duration-200">
+                      {/* Header */}
+                      {!isSingleEmployee && (
+                        <div className="border-b border-theme-border/60 pb-2">
+                          <p className="font-semibold text-theme-bright text-sm">{empName}</p>
+                          <p className="text-xs text-theme-muted">{empEmail}</p>
+                        </div>
+                      )}
+
+                      {/* Overall Summary Row */}
+                      <div className="flex justify-between items-center text-xs">
+                        <div>
+                          <span className="text-theme-muted mr-1">Hours Worked:</span>
+                          <span className="font-mono font-bold text-theme-bright">
+                            {log.workingHours ? `${log.workingHours.toFixed(2)}h` : '-'}
                           </span>
-                        </td>
+                        </div>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                          log.completionStatus === 'completed'
+                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                            : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                        }`}>
+                          {log.completionStatus || 'incomplete'}
+                        </span>
+                      </div>
 
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                      {/* Verification blocks */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-theme-border/60">
+                        {/* Punch In */}
+                        <div className="space-y-1.5 text-xs">
+                          <p className="font-bold text-violet-650 dark:text-violet-400 uppercase tracking-wider text-[10px]">Punch In</p>
+                          <p className="font-mono text-theme-text">
+                            Time: {log.punchIn?.time ? new Date(log.punchIn.time).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '-'}
+                          </p>
+                          {log.punchIn?.selfieUrl ? (
+                            <img src={log.punchIn.selfieUrl} alt="In Selfie" className="w-24 aspect-[4/3] object-cover rounded border border-theme-border" />
+                          ) : (
+                            <p className="text-xs text-theme-muted italic">No selfie</p>
+                          )}
+                          {log.punchIn?.location?.latitude ? (
+                            <div className="flex items-center gap-1 font-mono text-theme-muted text-[10px]">
+                              <span>{log.punchIn.location.latitude.toFixed(4)}, {log.punchIn.location.longitude.toFixed(4)}</span>
+                              <a href={`https://www.google.com/maps?q=${log.punchIn.location.latitude},${log.punchIn.location.longitude}`} target="_blank" rel="noopener noreferrer" className="text-violet-650 dark:text-violet-400 hover:text-violet-500"><ExternalLink className="w-3 h-3" /></a>
+                            </div>
+                          ) : (
+                            <p className="text-xs text-theme-muted italic">No location</p>
+                          )}
+                        </div>
+
+                        {/* Punch Out */}
+                        <div className="space-y-1.5 text-xs border-t sm:border-t-0 sm:border-l border-theme-border/60 pt-3 sm:pt-0 sm:pl-3">
+                          <p className="font-bold text-violet-650 dark:text-violet-400 uppercase tracking-wider text-[10px]">Punch Out</p>
+                          <p className="font-mono text-theme-text">
+                            Time: {log.punchOut?.time ? new Date(log.punchOut.time).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '-'}
+                          </p>
+                          {log.punchOut?.selfieUrl ? (
+                            <img src={log.punchOut.selfieUrl} alt="Out Selfie" className="w-24 aspect-[4/3] object-cover rounded border border-theme-border" />
+                          ) : (
+                            <p className="text-xs text-theme-muted italic">No selfie</p>
+                          )}
+                          {log.punchOut?.location?.latitude ? (
+                            <div className="flex items-center gap-1 font-mono text-theme-muted text-[10px]">
+                              <span>{log.punchOut.location.latitude.toFixed(4)}, {log.punchOut.location.longitude.toFixed(4)}</span>
+                              <a href={`https://www.google.com/maps?q=${log.punchOut.location.latitude},${log.punchOut.location.longitude}`} target="_blank" rel="noopener noreferrer" className="text-violet-650 dark:text-violet-400 hover:text-violet-500"><ExternalLink className="w-3 h-3" /></a>
+                            </div>
+                          ) : (
+                            <p className="text-xs text-theme-muted italic">No location</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
           )}
         </div>
 

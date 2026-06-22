@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useGetTeamAttendanceQuery, useValidateAttendanceMutation } from '../../redux/api/attendanceApi.js';
-import { Users, RefreshCw, AlertCircle, UserCheck, X, Calendar } from 'lucide-react';
+import { Users, RefreshCw, AlertCircle, UserCheck, X, Calendar, ExternalLink } from 'lucide-react';
 import DailyReportModal from '../common/DailyReportModal.jsx';
 import AttendanceVerificationDetails from '../common/AttendanceVerificationDetails.jsx';
 
@@ -115,7 +115,8 @@ export default function TeamAttendance() {
       ) : teamAttendance.length === 0 ? (
         <div className="py-12 text-center text-theme-muted text-sm">No team member attendance logs recorded.</div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-theme-border bg-theme-bg/30">
+        <>
+          <div className="hidden lg:block overflow-x-auto rounded-xl border border-theme-border bg-theme-bg/30">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-theme-border text-xs font-semibold text-theme-muted uppercase tracking-wider bg-theme-card-hover/50">
@@ -134,7 +135,6 @@ export default function TeamAttendance() {
               {teamAttendance.map((log) => {
                 const empName = log.employeeId?.name || 'Unknown User';
                 const empEmail = log.employeeId?.email || '';
-                const isPending = log.validation?.status === 'pending' && !pendingValidations.has(log._id);
                 const isExpanded = expandedRows.has(log._id);
 
                 return (
@@ -183,7 +183,7 @@ export default function TeamAttendance() {
                         </button>
                       </td>
                       <td className="py-4 px-5 text-center">
-                        {isPending ? (
+                        {log.validation?.status === 'pending' ? (
                           validatingRow.id === log._id ? (
                             <div className="flex flex-col gap-2 min-w-[200px] bg-theme-card border border-theme-border p-2 rounded-lg shadow-lg mx-auto align-middle">
                               <input
@@ -231,7 +231,7 @@ export default function TeamAttendance() {
                                 className="inline-flex items-center gap-1 bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-600/40 text-white font-semibold text-xs px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer shadow-sm"
                                 title="Approve as Valid"
                               >
-                                <UserCheck className="w-3.5 h-3.5" />
+                                  <UserCheck className="w-3.5 h-3.5" />
                                 <span>Approve</span>
                               </button>
                               <button
@@ -265,6 +265,195 @@ export default function TeamAttendance() {
             </tbody>
           </table>
         </div>
+
+        {/* Mobile Card List */}
+        <div className="lg:hidden space-y-4">
+          {teamAttendance.map((log) => {
+            const empName = log.employeeId?.name || 'Unknown User';
+            const empEmail = log.employeeId?.email || '';
+            const isExpanded = expandedRows.has(log._id);
+            const isPending = log.validation?.status === 'pending' && !pendingValidations.has(log._id);
+
+            return (
+              <div key={log._id} className="bg-theme-bg/20 border border-theme-border rounded-xl p-4 space-y-4 transition-colors duration-200">
+                {/* Header: Name, Email & Date */}
+                <div className="flex justify-between items-start gap-2">
+                  <div>
+                    <p className="font-semibold text-theme-bright text-sm">{empName}</p>
+                    <p className="text-xs text-theme-muted">{empEmail}</p>
+                  </div>
+                  <span className="text-xs font-semibold text-theme-muted bg-theme-card px-2.5 py-1 rounded-lg border border-theme-border whitespace-nowrap">
+                    {formatDate(log.date)}
+                  </span>
+                </div>
+
+                {/* Stats/Badges Row */}
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <span className="text-theme-muted block mb-0.5 font-medium">Punch In:</span>
+                    <span className="font-mono text-theme-text">{formatTime(log.punchIn?.time)}</span>
+                  </div>
+                  <div>
+                    <span className="text-theme-muted block mb-0.5 font-medium">Punch Out:</span>
+                    <span className="font-mono text-theme-text">{formatTime(log.punchOut?.time)}</span>
+                  </div>
+                  <div>
+                    <span className="text-theme-muted block mb-0.5 font-medium">Working Hours:</span>
+                    <span className="font-mono font-semibold text-theme-bright">
+                      {log.workingHours ? `${log.workingHours.toFixed(2)}h` : '-'}
+                    </span>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-theme-muted block font-medium">Status:</span>
+                    <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider ${
+                      log.completionStatus === 'completed'
+                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                        : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                    }`}>
+                      {log.completionStatus || 'incomplete'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Validation Row */}
+                <div className="flex items-center justify-between border-t border-theme-border/60 pt-3">
+                  <div>
+                    <span className="text-theme-muted text-xs mr-2 font-medium">Validation:</span>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider ${
+                      log.validation?.status === 'valid'
+                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                        : log.validation?.status === 'invalid'
+                        ? 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20'
+                        : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                    }`}>
+                      {log.validation?.status || 'pending'}
+                    </span>
+                  </div>
+                  
+                  <button
+                    onClick={() => toggleExpand(log._id)}
+                    className={`text-xs font-semibold px-2.5 py-1 rounded-lg border transition-colors cursor-pointer ${
+                      isExpanded
+                        ? 'bg-theme-card-hover text-theme-bright border-theme-border'
+                        : 'bg-theme-card text-theme-text border-theme-border hover:bg-theme-card-hover hover:text-theme-bright'
+                    }`}
+                  >
+                    {isExpanded ? 'Hide Details' : 'Verify Details'}
+                  </button>
+                </div>
+
+                {/* Collapsible Details */}
+                {isExpanded && (
+                  <div className="bg-theme-card border border-theme-border rounded-lg p-3 space-y-3">
+                    {/* Punch In */}
+                    <div className="space-y-2">
+                      <p className="text-xs font-bold text-violet-650 dark:text-violet-400 uppercase tracking-wider">Punch In Verification</p>
+                      {log.punchIn?.selfieUrl ? (
+                        <img src={log.punchIn.selfieUrl} alt="In Selfie" className="w-32 aspect-[4/3] object-cover rounded border border-theme-border" />
+                      ) : (
+                        <p className="text-xs text-theme-muted italic">No selfie captured.</p>
+                      )}
+                      {log.punchIn?.location?.latitude ? (
+                        <div className="flex items-center gap-1.5 text-xs font-mono text-theme-text">
+                          <span>{log.punchIn.location.latitude.toFixed(6)}, {log.punchIn.location.longitude.toFixed(6)}</span>
+                          <a href={`https://www.google.com/maps?q=${log.punchIn.location.latitude},${log.punchIn.location.longitude}`} target="_blank" rel="noopener noreferrer" className="text-violet-650 dark:text-violet-400 hover:text-violet-500"><ExternalLink className="w-3 h-3" /></a>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-theme-muted italic">No GPS coordinates.</p>
+                      )}
+                    </div>
+                    {/* Punch Out */}
+                    <div className="space-y-2 border-t border-theme-border/60 pt-3">
+                      <p className="text-xs font-bold text-violet-650 dark:text-violet-400 uppercase tracking-wider">Punch Out Verification</p>
+                      {log.punchOut?.selfieUrl ? (
+                        <img src={log.punchOut.selfieUrl} alt="Out Selfie" className="w-32 aspect-[4/3] object-cover rounded border border-theme-border" />
+                      ) : (
+                        <p className="text-xs text-theme-muted italic">No selfie captured.</p>
+                      )}
+                      {log.punchOut?.location?.latitude ? (
+                        <div className="flex items-center gap-1.5 text-xs font-mono text-theme-text">
+                          <span>{log.punchOut.location.latitude.toFixed(6)}, {log.punchOut.location.longitude.toFixed(6)}</span>
+                          <a href={`https://www.google.com/maps?q=${log.punchOut.location.latitude},${log.punchOut.location.longitude}`} target="_blank" rel="noopener noreferrer" className="text-violet-650 dark:text-violet-400 hover:text-violet-500"><ExternalLink className="w-3 h-3" /></a>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-theme-muted italic">No GPS coordinates.</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Actions Panel */}
+                {isPending && (
+                  <div className="border-t border-theme-border/60 pt-3">
+                    {validatingRow.id === log._id ? (
+                      <div className="flex flex-col gap-2 bg-theme-card border border-theme-border p-2 rounded-lg shadow-lg">
+                        <input
+                          type="text"
+                          value={remarks}
+                          onChange={(e) => setRemarks(e.target.value)}
+                          placeholder={validatingRow.status === 'valid' ? "Remarks (optional)..." : "Reason for rejection..."}
+                          className="w-full bg-theme-bg border border-theme-input-border rounded px-2 py-1 text-xs text-theme-bright focus:outline-none focus:border-violet-500"
+                        />
+                        <div className="flex gap-2 justify-end">
+                          <button
+                            onClick={() => {
+                              setValidatingRow({ id: null, status: null });
+                              setRemarks('');
+                            }}
+                            className="text-xs text-theme-muted hover:text-theme-bright px-2.5 py-1 bg-theme-card-hover rounded transition-colors cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={async () => {
+                              if (validatingRow.status === 'invalid' && !remarks.trim()) {
+                                alert("Please enter a remark.");
+                                return;
+                              }
+                              await handleValidate(log._id, validatingRow.status, remarks.trim());
+                            }}
+                            disabled={isValidating}
+                            className={`text-xs text-white font-bold px-2.5 py-1 rounded transition-all cursor-pointer ${
+                              validatingRow.status === 'valid' ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-red-650 hover:bg-red-500'
+                            }`}
+                          >
+                            Confirm
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => {
+                            setValidatingRow({ id: log._id, status: 'valid' });
+                            setRemarks('');
+                          }}
+                          disabled={isValidating}
+                          className="flex-1 inline-flex items-center justify-center gap-1 bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-600/40 text-white font-semibold text-xs py-2 rounded-lg transition-colors cursor-pointer shadow-sm"
+                        >
+                          <UserCheck className="w-3.5 h-3.5" />
+                          <span>Approve</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setValidatingRow({ id: log._id, status: 'invalid' });
+                            setRemarks('');
+                          }}
+                          disabled={isValidating}
+                          className="flex-1 inline-flex items-center justify-center gap-1 bg-red-650/80 hover:bg-red-600 text-white font-semibold text-xs py-2 rounded-lg transition-colors cursor-pointer shadow-sm"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                          <span>Reject</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        </>
       )}
 
       <DailyReportModal

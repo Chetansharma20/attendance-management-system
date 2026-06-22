@@ -53,7 +53,7 @@ export default function Login() {
       </div>
 
       {/* Card */}
-      <div className="relative w-full max-w-lg bg-theme-card border border-theme-border rounded-3xl shadow-xl px-10 py-12 sm:px-14 sm:py-16 transition-colors duration-200">
+      <div className="relative w-full max-w-lg bg-theme-card border border-theme-border rounded-3xl shadow-xl px-6 py-10 sm:px-14 sm:py-16 transition-colors duration-200">
 
         {/* Logo */}
         <div className="flex flex-col items-center mb-10">

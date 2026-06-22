@@ -119,7 +119,7 @@ export default function UsersList() {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto rounded-xl border border-theme-border bg-theme-bg/30">
+            <div className="hidden md:block overflow-x-auto rounded-xl border border-theme-border bg-theme-bg/30">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-theme-border text-xs font-semibold text-theme-muted uppercase tracking-wider bg-theme-card-hover/50">
@@ -150,6 +150,36 @@ export default function UsersList() {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Mobile Card List */}
+            <div className="md:hidden space-y-4">
+              {users.map((u) => (
+                <div key={u._id} className="bg-theme-bg/20 border border-theme-border rounded-xl p-4 space-y-3 transition-colors duration-200">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-theme-bright text-sm">{u.name}</span>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider ${
+                      u.role === 'admin'
+                        ? 'bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400 border border-fuchsia-500/20'
+                        : u.role === 'manager'
+                        ? 'bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20'
+                        : 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20'
+                    }`}>
+                      {u.role}
+                    </span>
+                  </div>
+                  <div className="text-xs space-y-1">
+                    <p className="text-theme-text">
+                      <span className="text-theme-muted font-medium">Email: </span>
+                      {u.email}
+                    </p>
+                    <p className="text-theme-text">
+                      <span className="text-theme-muted font-medium">Joined On: </span>
+                      {formatDate(u.createdAt)}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
 
             <Pagination

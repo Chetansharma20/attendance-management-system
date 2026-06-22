@@ -42,8 +42,8 @@ export default function OvertimeRequestForm({ attendanceId, onSuccess, onCancel 
           {error}
         </p>
       )}
-      <div className="flex gap-3 items-end">
-        <div className="flex-1">
+      <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
+        <div className="flex-1 w-full">
           <label className="text-xs text-theme-muted block mb-1">Hours Requested</label>
           <input
             type="number"
@@ -55,7 +55,7 @@ export default function OvertimeRequestForm({ attendanceId, onSuccess, onCancel 
             className="w-full bg-theme-card border border-theme-input-border rounded-lg px-3 py-2 text-sm text-theme-bright placeholder-theme-muted/50 focus:outline-none focus:border-violet-500 transition-colors"
           />
         </div>
-        <div className="flex-[2]">
+        <div className="flex-[2] w-full">
           <label className="text-xs text-theme-muted block mb-1">Reason</label>
           <input
             type="text"

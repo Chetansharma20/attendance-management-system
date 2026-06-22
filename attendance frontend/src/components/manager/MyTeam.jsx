@@ -67,36 +67,66 @@ export default function MyTeam() {
           <p className="text-theme-muted/80 text-xs mt-1">Contact your admin to assign team members.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-theme-border bg-theme-bg/30">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-theme-border text-xs font-semibold text-theme-muted uppercase tracking-wider bg-theme-card-hover/50">
-                <th className="py-4 px-5">#</th>
-                <th className="py-4 px-5">Name</th>
-                <th className="py-4 px-5">Email</th>
-                <th className="py-4 px-5">Joined On</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-theme-border/60 text-sm">
-              {employees.map((emp, idx) => (
-                <tr key={emp._id} className="hover:bg-theme-card-hover/50 transition-colors">
-                  <td className="py-4 px-5 text-theme-muted font-mono text-xs">{idx + 1}</td>
-                  <td className="py-4 px-5">
-                    <div className="flex items-center gap-3">
-                      {/* Avatar initials */}
-                      <div className="w-8 h-8 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400 flex items-center justify-center text-xs font-bold shrink-0">
-                        {emp.name?.charAt(0)?.toUpperCase() || '?'}
-                      </div>
-                      <span className="font-medium text-theme-bright">{emp.name}</span>
-                    </div>
-                  </td>
-                  <td className="py-4 px-5 text-theme-text">{emp.email}</td>
-                  <td className="py-4 px-5 text-theme-muted">{formatDate(emp.createdAt)}</td>
+        <>
+          <div className="hidden md:block overflow-x-auto rounded-xl border border-theme-border bg-theme-bg/30">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-theme-border text-xs font-semibold text-theme-muted uppercase tracking-wider bg-theme-card-hover/50">
+                  <th className="py-4 px-5">#</th>
+                  <th className="py-4 px-5">Name</th>
+                  <th className="py-4 px-5">Email</th>
+                  <th className="py-4 px-5">Joined On</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-theme-border/60 text-sm">
+                {employees.map((emp, idx) => (
+                  <tr key={emp._id} className="hover:bg-theme-card-hover/50 transition-colors">
+                    <td className="py-4 px-5 text-theme-muted font-mono text-xs">{idx + 1}</td>
+                    <td className="py-4 px-5">
+                      <div className="flex items-center gap-3">
+                        {/* Avatar initials */}
+                        <div className="w-8 h-8 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400 flex items-center justify-center text-xs font-bold shrink-0">
+                          {emp.name?.charAt(0)?.toUpperCase() || '?'}
+                        </div>
+                        <span className="font-medium text-theme-bright">{emp.name}</span>
+                      </div>
+                    </td>
+                    <td className="py-4 px-5 text-theme-text">{emp.email}</td>
+                    <td className="py-4 px-5 text-theme-muted">{formatDate(emp.createdAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Card List */}
+          <div className="md:hidden space-y-4">
+            {employees.map((emp, idx) => (
+              <div key={emp._id} className="bg-theme-bg/20 border border-theme-border rounded-xl p-4 space-y-3 transition-colors duration-200">
+                <div className="flex items-center gap-3">
+                  {/* Avatar initials */}
+                  <div className="w-9 h-9 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400 flex items-center justify-center text-sm font-bold shrink-0">
+                    {emp.name?.charAt(0)?.toUpperCase() || '?'}
+                  </div>
+                  <div>
+                    <span className="font-semibold text-theme-bright text-sm block">{emp.name}</span>
+                    <span className="text-[10px] text-theme-muted font-mono">Index: #{idx + 1}</span>
+                  </div>
+                </div>
+                <div className="text-xs space-y-1 pt-2 border-t border-theme-border/60">
+                  <p className="text-theme-text">
+                    <span className="text-theme-muted font-medium">Email: </span>
+                    {emp.email}
+                  </p>
+                  <p className="text-theme-text">
+                    <span className="text-theme-muted font-medium">Joined On: </span>
+                    {formatDate(emp.createdAt)}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </section>
   );

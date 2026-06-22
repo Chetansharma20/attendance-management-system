@@ -19,7 +19,6 @@ export default function AddUserModal({ isOpen, onClose }) {
 
   const [register, { isLoading }] = useRegisterMutation();
 
-  // Fetch managers list (used when role = employee)
   const { data: managersResponse } = useFetchUsersQuery({ role: 'manager', limit: 100 });
   const managers = managersResponse?.data?.users || [];
 

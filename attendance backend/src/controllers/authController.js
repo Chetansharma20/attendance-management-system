@@ -12,7 +12,7 @@ export const login = asyncHandler(async (req, res) => {
 
   const { accessToken, refreshToken } = generateTokens(user);
 
-  // Exclude password from the returned user data
+ 
   const loggedInUser = {
     _id: user._id,
     name: user.name,

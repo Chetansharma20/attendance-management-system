@@ -3,12 +3,14 @@ import authReducer from './slices/authSlice.js';
 import { authApi } from './api/authApi.js';
 import { attendanceApi } from './api/attendanceApi.js';
 import { overtimeApi } from './api/overtimeApi.js';
+import { settingsApi } from './api/settingsApi.js';
 
 const logoutMiddleware = (store) => (next) => (action) => {
   if (action.type === 'auth/clearUser') {
     store.dispatch(authApi.util.resetApiState());
     store.dispatch(attendanceApi.util.resetApiState());
     store.dispatch(overtimeApi.util.resetApiState());
+    store.dispatch(settingsApi.util.resetApiState());
   }
   return next(action);
 };
@@ -22,6 +24,7 @@ const store = configureStore({
     [authApi.reducerPath]: authApi.reducer,
     [attendanceApi.reducerPath]: attendanceApi.reducer,
     [overtimeApi.reducerPath]: overtimeApi.reducer,
+    [settingsApi.reducerPath]: settingsApi.reducer,
   },
 
   // RTK Query middleware handles caching, invalidation, polling
@@ -30,7 +33,8 @@ const store = configureStore({
       logoutMiddleware,
       authApi.middleware,
       attendanceApi.middleware,
-      overtimeApi.middleware
+      overtimeApi.middleware,
+      settingsApi.middleware
     ),
 });
 

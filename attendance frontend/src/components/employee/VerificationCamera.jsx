@@ -77,12 +77,12 @@ export default function VerificationCamera({
 
       {/* Action Buttons */}
       {!cameraLoading && (
-        <div className="flex justify-end gap-3 pt-2">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2">
           <button
             type="button"
             onClick={onCancel}
             disabled={isSubmitting}
-            className="px-4 py-2 border border-theme-border hover:bg-theme-card-hover text-theme-muted hover:text-theme-bright rounded-xl text-xs font-semibold tracking-wide transition-colors cursor-pointer"
+            className="w-full sm:w-auto px-4 py-2 border border-theme-border hover:bg-theme-card-hover text-theme-muted hover:text-theme-bright rounded-xl text-xs font-semibold tracking-wide transition-colors cursor-pointer text-center"
           >
             Cancel
           </button>
@@ -90,7 +90,7 @@ export default function VerificationCamera({
             type="button"
             onClick={onConfirm}
             disabled={isSubmitting}
-            className="px-5 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-xl text-xs font-bold tracking-wide transition-all shadow-md flex items-center gap-2 cursor-pointer disabled:opacity-50"
+            className="w-full sm:w-auto px-5 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-xl text-xs font-bold tracking-wide transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
           >
             <MapPin className="w-3.5 h-3.5" />
             <span>Confirm Identity & Location</span>
