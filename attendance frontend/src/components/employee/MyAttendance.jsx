@@ -41,6 +41,22 @@ export default function MyAttendance() {
     return logs.reduce((sum, log) => sum + (log.workingHours || 0), 0);
   }, [logs]);
 
+  const getFirstPunchIn = (punches) => {
+    if (!punches || punches.length === 0) return null;
+    const firstIn = punches.find((p) => p.type === 'in');
+    return firstIn ? firstIn.time : null;
+  };
+
+  const getLastPunchOut = (punches) => {
+    if (!punches || punches.length === 0) return null;
+    for (let i = punches.length - 1; i >= 0; i--) {
+      if (punches[i].type === 'out') {
+        return punches[i].time;
+      }
+    }
+    return null;
+  };
+
   const formatDate = (dateStr) => {
     if (!dateStr) return '-';
     return new Date(dateStr).toLocaleDateString(undefined, {
@@ -172,21 +188,35 @@ export default function MyAttendance() {
 
                           {/* Punch In */}
                           <td className="py-4 px-5 font-mono text-theme-text text-xs">
-                            {log.punchIn?.time ? (
-                              <span className="inline-flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-                                {formatTime(log.punchIn.time)}
-                              </span>
+                            {getFirstPunchIn(log.punches) ? (
+                              <div className="flex flex-col gap-0.5">
+                                <span className="inline-flex items-center gap-1.5">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                                  {formatTime(getFirstPunchIn(log.punches))}
+                                </span>
+                                {log.arrivalStatus === 'late' ? (
+                                  <span className="text-[9px] font-bold text-red-500 uppercase tracking-wider block">Late</span>
+                                ) : log.arrivalStatus === 'on-time' ? (
+                                  <span className="text-[9px] font-bold text-emerald-500 uppercase tracking-wider block">On-Time</span>
+                                ) : null}
+                              </div>
                             ) : '-'}
                           </td>
 
                           {/* Punch Out */}
                           <td className="py-4 px-5 font-mono text-theme-text text-xs">
-                            {log.punchOut?.time ? (
-                              <span className="inline-flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" />
-                                {formatTime(log.punchOut.time)}
-                              </span>
+                            {getLastPunchOut(log.punches) ? (
+                              <div className="flex flex-col gap-0.5">
+                                <span className="inline-flex items-center gap-1.5">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" />
+                                  {formatTime(getLastPunchOut(log.punches))}
+                                </span>
+                                {log.departureStatus === 'early-departure' ? (
+                                  <span className="text-[9px] font-bold text-amber-500 uppercase tracking-wider block">Early Leave</span>
+                                ) : log.departureStatus === 'regular' ? (
+                                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Regular</span>
+                                ) : null}
+                              </div>
                             ) : '-'}
                           </td>
 
@@ -334,17 +364,31 @@ export default function MyAttendance() {
                     <div className="grid grid-cols-2 gap-3 text-xs">
                       <div>
                         <span className="text-theme-muted block mb-0.5 font-medium">Punch In:</span>
-                        <span className="font-mono text-theme-text inline-flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-                          {log.punchIn?.time ? formatTime(log.punchIn.time) : '-'}
-                        </span>
+                        <div className="flex flex-col gap-0.5">
+                          <span className="font-mono text-theme-text inline-flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                            {getFirstPunchIn(log.punches) ? formatTime(getFirstPunchIn(log.punches)) : '-'}
+                          </span>
+                          {log.arrivalStatus === 'late' ? (
+                            <span className="text-[9px] font-bold text-red-500 uppercase tracking-wider">Late</span>
+                          ) : log.arrivalStatus === 'on-time' ? (
+                            <span className="text-[9px] font-bold text-emerald-500 uppercase tracking-wider">On-Time</span>
+                          ) : null}
+                        </div>
                       </div>
                       <div>
                         <span className="text-theme-muted block mb-0.5 font-medium">Punch Out:</span>
-                        <span className="font-mono text-theme-text inline-flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" />
-                          {log.punchOut?.time ? formatTime(log.punchOut.time) : '-'}
-                        </span>
+                        <div className="flex flex-col gap-0.5">
+                          <span className="font-mono text-theme-text inline-flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" />
+                            {getLastPunchOut(log.punches) ? formatTime(getLastPunchOut(log.punches)) : '-'}
+                          </span>
+                          {log.departureStatus === 'early-departure' ? (
+                            <span className="text-[9px] font-bold text-amber-500 uppercase tracking-wider">Early Leave</span>
+                          ) : log.departureStatus === 'regular' ? (
+                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Regular</span>
+                          ) : null}
+                        </div>
                       </div>
                       <div>
                         <span className="text-theme-muted block mb-0.5 font-medium">Working Hours:</span>

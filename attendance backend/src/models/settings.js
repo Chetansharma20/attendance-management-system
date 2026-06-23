@@ -22,6 +22,21 @@ const settingsSchema = new mongoose.Schema(
       required: true,
       default: false,
     },
+    workStartTime: {
+      type: String,
+      required: true,
+      default: "09:00",
+    },
+    workEndTime: {
+      type: String,
+      required: true,
+      default: "18:00",
+    },
+    gracePeriod: {
+      type: Number,
+      required: true,
+      default: 15, // in minutes
+    },
   },
   {
     timestamps: true,

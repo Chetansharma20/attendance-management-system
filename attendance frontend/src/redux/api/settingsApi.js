@@ -4,7 +4,7 @@ import { baseQueryWithReauth } from '../baseQuery.js';
 export const settingsApi = createApi({
   reducerPath: 'settingsApi',
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['Settings'],
+  tagTypes: ['Settings', 'Shifts'],
   endpoints: (builder) => ({
     getGeofenceSettings: builder.query({
       query: () => '/settings/geofence',
@@ -18,10 +18,32 @@ export const settingsApi = createApi({
       }),
       invalidatesTags: ['Settings'],
     }),
+    getShifts: builder.query({
+      query: () => '/shifts/getallshifts',
+      providesTags: ['Shifts'],
+    }),
+    createShift: builder.mutation({
+      query: (body) => ({
+        url: '/shifts/createShift',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Shifts'],
+    }),
+    deleteShift: builder.mutation({
+      query: (id) => ({
+        url: `/shifts/deleteShift/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Shifts'],
+    }),
   }),
 });
 
 export const {
   useGetGeofenceSettingsQuery,
   useUpdateGeofenceSettingsMutation,
+  useGetShiftsQuery,
+  useCreateShiftMutation,
+  useDeleteShiftMutation,
 } = settingsApi;

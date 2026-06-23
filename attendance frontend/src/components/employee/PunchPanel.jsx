@@ -21,7 +21,11 @@ export default function PunchPanel({ logs, refetch }) {
     return () => clearInterval(timer);
   }, []);
 
-  const activeLog = logs.find(log => log.punchIn && !log.punchOut);
+  const activeLog = logs.find(log => {
+    if (!log.punches || log.punches.length === 0) return false;
+    const lastPunch = log.punches[log.punches.length - 1];
+    return lastPunch.type === 'in';
+  });
   const isClockedIn = !!activeLog;
 
   const startCamera = async () => {
@@ -169,9 +173,9 @@ export default function PunchPanel({ logs, refetch }) {
                 {isClockedIn ? 'Punched In' : 'Not Punched In'}
               </span>
             </div>
-            {isClockedIn && activeLog?.punchIn?.time && (
+            {isClockedIn && activeLog && (
               <span className="text-[10px] text-theme-muted block font-mono">
-                Started at {new Date(activeLog.punchIn.time).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                Started at {new Date(activeLog.punches[activeLog.punches.length - 1].time).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
               </span>
             )}
           </div>

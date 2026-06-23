@@ -6,11 +6,13 @@ import cookieParser from 'cookie-parser';
 import connectDB from './src/config/db.js';
 import { setupLogger } from './src/middleware/loggerMiddleware.js';
 import { errorHandler } from './src/middleware/errorMiddleware.js';
-import apiRouter from './src/routes/index.js';
+import apiRouter from './src/routes.js';
+import { initCronJobs } from './src/config/cron.js';
 
 const server = express();
 
 connectDB();
+initCronJobs();
 
 const allowedOrigins = [
   'http://localhost:5173',

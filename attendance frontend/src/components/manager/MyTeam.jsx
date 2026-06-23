@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useGetMyTeamQuery } from '../../redux/api/authApi.js';
-import { Users, RefreshCw, AlertCircle, UserCheck } from 'lucide-react';
+import { useManagerPunchMutation } from '../../redux/api/attendanceApi.js';
+import { Users, RefreshCw, AlertCircle, UserCheck, LogIn, LogOut } from 'lucide-react';
 
 export default function MyTeam() {
   const {
@@ -11,7 +12,21 @@ export default function MyTeam() {
     refetch,
   } = useGetMyTeamQuery();
 
+  const [managerPunch, { isLoading: isPunching }] = useManagerPunchMutation();
+
+  // Track which employee is currently being processed
+  const [loadingEmployeeId, setLoadingEmployeeId] = useState(null);
+  // Local status overrides for optimistic UI updates
+  const [localPunchStatus, setLocalPunchStatus] = useState({});
+  // Toast notification state
+  const [toast, setToast] = useState(null);
+
   const employees = teamResponse?.data || [];
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3500);
+  };
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '-';
@@ -22,8 +37,112 @@ export default function MyTeam() {
     });
   };
 
+  const handleMarkAttendance = async (employeeId, type) => {
+    setLoadingEmployeeId(employeeId);
+    try {
+      await managerPunch({ employeeId, type }).unwrap();
+      // Optimistically update local state
+      setLocalPunchStatus((prev) => ({ ...prev, [employeeId]: type }));
+      showToast(
+        `Successfully clocked ${type === 'in' ? 'in' : 'out'} employee.`,
+        'success'
+      );
+      // Refetch to sync with server
+      refetch();
+    } catch (err) {
+      showToast(
+        err?.data?.message || err?.error || `Failed to clock ${type}`,
+        'error'
+      );
+    } finally {
+      setLoadingEmployeeId(null);
+    }
+  };
+
+  const getLastPunchType = (emp) => {
+    // Use local optimistic override if present, otherwise use server data
+    if (localPunchStatus[emp._id] !== undefined) return localPunchStatus[emp._id];
+    return emp.lastPunchType ?? null;
+  };
+
+  const AttendanceButton = ({ emp }) => {
+    const lastPunch = getLastPunchType(emp);
+    const isThisLoading = loadingEmployeeId === emp._id;
+    const isClockedIn = lastPunch === 'in';
+
+    if (isClockedIn) {
+      return (
+        <button
+          onClick={() => handleMarkAttendance(emp._id, 'out')}
+          disabled={isPunching}
+          className="inline-flex items-center gap-1.5 bg-amber-500/10 hover:bg-amber-500/20 disabled:opacity-50 text-amber-600 dark:text-amber-400 border border-amber-500/30 font-semibold text-xs px-3 py-1.5 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+          title="Clock this employee out"
+        >
+          {isThisLoading ? (
+            <span className="w-3.5 h-3.5 border-2 border-amber-400/30 border-t-amber-400 rounded-full animate-spin" />
+          ) : (
+            <LogOut className="w-3.5 h-3.5" />
+          )}
+          <span>Clock Out</span>
+        </button>
+      );
+    }
+
+    return (
+      <button
+        onClick={() => handleMarkAttendance(emp._id, 'in')}
+        disabled={isPunching}
+        className="inline-flex items-center gap-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 disabled:opacity-50 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-semibold text-xs px-3 py-1.5 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+        title="Clock this employee in"
+      >
+        {isThisLoading ? (
+          <span className="w-3.5 h-3.5 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin" />
+        ) : (
+          <LogIn className="w-3.5 h-3.5" />
+        )}
+        <span>Clock In</span>
+      </button>
+    );
+  };
+
+  const StatusBadge = ({ emp }) => {
+    const lastPunch = getLastPunchType(emp);
+    if (lastPunch === 'in') {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          Clocked In
+        </span>
+      );
+    }
+    if (lastPunch === 'out') {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-500/10 text-slate-500 dark:text-slate-400 border border-slate-500/20">
+          Clocked Out
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-theme-card-hover text-theme-muted border border-theme-border">
+        Not Punched
+      </span>
+    );
+  };
+
   return (
     <section className="bg-theme-card border border-theme-border rounded-2xl p-6 shadow-xl space-y-6 transition-colors duration-200">
+
+      {/* Toast */}
+      {toast && (
+        <div className={`fixed top-5 right-5 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-semibold border flex items-center gap-2 transition-all ${
+          toast.type === 'success'
+            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+            : 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30'
+        }`}>
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          {toast.message}
+        </div>
+      )}
 
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -68,6 +187,7 @@ export default function MyTeam() {
         </div>
       ) : (
         <>
+          {/* Desktop Table */}
           <div className="hidden md:block overflow-x-auto rounded-xl border border-theme-border bg-theme-bg/30">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -75,7 +195,9 @@ export default function MyTeam() {
                   <th className="py-4 px-5">#</th>
                   <th className="py-4 px-5">Name</th>
                   <th className="py-4 px-5">Email</th>
+                  <th className="py-4 px-5">Today's Status</th>
                   <th className="py-4 px-5">Joined On</th>
+                  <th className="py-4 px-5 text-center">Mark Attendance</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-theme-border/60 text-sm">
@@ -84,7 +206,6 @@ export default function MyTeam() {
                     <td className="py-4 px-5 text-theme-muted font-mono text-xs">{idx + 1}</td>
                     <td className="py-4 px-5">
                       <div className="flex items-center gap-3">
-                        {/* Avatar initials */}
                         <div className="w-8 h-8 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400 flex items-center justify-center text-xs font-bold shrink-0">
                           {emp.name?.charAt(0)?.toUpperCase() || '?'}
                         </div>
@@ -92,7 +213,13 @@ export default function MyTeam() {
                       </div>
                     </td>
                     <td className="py-4 px-5 text-theme-text">{emp.email}</td>
+                    <td className="py-4 px-5">
+                      <StatusBadge emp={emp} />
+                    </td>
                     <td className="py-4 px-5 text-theme-muted">{formatDate(emp.createdAt)}</td>
+                    <td className="py-4 px-5 text-center">
+                      <AttendanceButton emp={emp} />
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -104,14 +231,14 @@ export default function MyTeam() {
             {employees.map((emp, idx) => (
               <div key={emp._id} className="bg-theme-bg/20 border border-theme-border rounded-xl p-4 space-y-3 transition-colors duration-200">
                 <div className="flex items-center gap-3">
-                  {/* Avatar initials */}
                   <div className="w-9 h-9 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400 flex items-center justify-center text-sm font-bold shrink-0">
                     {emp.name?.charAt(0)?.toUpperCase() || '?'}
                   </div>
-                  <div>
-                    <span className="font-semibold text-theme-bright text-sm block">{emp.name}</span>
-                    <span className="text-[10px] text-theme-muted font-mono">Index: #{idx + 1}</span>
+                  <div className="flex-1 min-w-0">
+                    <span className="font-semibold text-theme-bright text-sm block truncate">{emp.name}</span>
+                    <span className="text-[10px] text-theme-muted font-mono">#{idx + 1}</span>
                   </div>
+                  <StatusBadge emp={emp} />
                 </div>
                 <div className="text-xs space-y-1 pt-2 border-t border-theme-border/60">
                   <p className="text-theme-text">
@@ -122,6 +249,9 @@ export default function MyTeam() {
                     <span className="text-theme-muted font-medium">Joined On: </span>
                     {formatDate(emp.createdAt)}
                   </p>
+                </div>
+                <div className="pt-1">
+                  <AttendanceButton emp={emp} />
                 </div>
               </div>
             ))}

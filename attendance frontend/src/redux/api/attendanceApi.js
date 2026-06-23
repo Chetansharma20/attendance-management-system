@@ -71,6 +71,16 @@ export const attendanceApi = createApi({
       }),
     }),
 
+    // POST /api/v1/attendance/manager-punch  (manager / admin)
+    managerPunch: builder.mutation({
+      query: ({ employeeId, type }) => ({
+        url: '/attendance/manager-punch',
+        method: 'POST',
+        body: { employeeId, type },
+      }),
+      invalidatesTags: ['Attendance'],
+    }),
+
   }),
 });
 
@@ -83,4 +93,5 @@ export const {
   useGetAllAttendanceQuery,
   useValidateAttendanceMutation,
   useDownloadDailyReportMutation,
+  useManagerPunchMutation,
 } = attendanceApi;

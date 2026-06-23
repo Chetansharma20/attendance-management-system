@@ -10,6 +10,10 @@ import MyTeam from '../../components/manager/MyTeam.jsx';
 import MyAttendance from '../../components/employee/MyAttendance.jsx';
 import MyOvertimeRequests from '../../components/employee/MyOvertimeRequests.jsx';
 import AdminSettings from '../../components/admin/AdminSettings.jsx';
+import ShiftManagement from '../../components/admin/ShiftManagement.jsx';
+import LeaveManagement from '../../components/admin/LeaveManagement.jsx';
+import TeamLeaves from '../../components/manager/TeamLeaves.jsx';
+import MyLeaves from '../../components/employee/MyLeaves.jsx';
 import { LogOut, Clock, Sun, Moon } from 'lucide-react';
 import { ThemeContext } from '../../context/ThemeContext.jsx';
 
@@ -62,8 +66,10 @@ export default function Dashboard() {
 
   const adminTabs = [
     { id: 'users',      label: 'Manage Employees' },
+    { id: 'shifts',     label: 'Manage Shifts' },
     { id: 'attendance', label: 'Attendance Records' },
     { id: 'overtime',   label: 'Overtime Requests' },
+    { id: 'leave',      label: 'Leave Management' },
     { id: 'settings',   label: 'Geofence Settings' },
   ];
 
@@ -71,11 +77,13 @@ export default function Dashboard() {
     { id: 'team',       label: 'My Team' },
     { id: 'attendance', label: 'Team Attendance' },
     { id: 'overtime',   label: 'Overtime Requests' },
+    { id: 'leaves',     label: 'Team Leaves' },
   ];
 
   const employeeTabs = [
     { id: 'attendance', label: 'Punch & Attendance' },
     { id: 'overtime',   label: 'Overtime Requests' },
+    { id: 'leaves',     label: 'My Leaves' },
   ];
 
   return (
@@ -151,8 +159,10 @@ export default function Dashboard() {
 
           {/* Admin Tab Content */}
           {adminTab === 'users' && <UsersList />}
+          {adminTab === 'shifts' && <ShiftManagement />}
           {adminTab === 'attendance' && <AttendanceLogs />}
           {adminTab === 'overtime' && <PendingOvertime />}
+          {adminTab === 'leave' && <LeaveManagement />}
           {adminTab === 'settings' && <AdminSettings />}
         </main>
 
@@ -175,6 +185,7 @@ export default function Dashboard() {
           {managerTab === 'team' && <MyTeam />}
           {managerTab === 'attendance' && <TeamAttendance />}
           {managerTab === 'overtime' && <PendingOvertime />}
+          {managerTab === 'leaves' && <TeamLeaves />}
         </main>
 
       ) : (
@@ -194,11 +205,9 @@ export default function Dashboard() {
           </div>
 
           {/* Employee Tab Content */}
-          {employeeTab === 'attendance' ? (
-            <MyAttendance />
-          ) : (
-            <MyOvertimeRequests />
-          )}
+          {employeeTab === 'attendance' && <MyAttendance />}
+          {employeeTab === 'overtime' && <MyOvertimeRequests />}
+          {employeeTab === 'leaves' && <MyLeaves />}
         </main>
       )}
 

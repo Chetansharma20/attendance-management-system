@@ -13,27 +13,24 @@ const attendanceSchema = new mongoose.Schema(
       required: true,
     },
 
-    punchIn: {
-      time: Date,
-
-      selfieUrl: String,
-
-      location: {
-        latitude: Number,
-        longitude: Number,
+    punches: [
+      {
+        type: {
+          type: String,
+          enum: ["in", "out"],
+          required: true,
+        },
+        time: {
+          type: Date,
+          required: true,
+        },
+        selfieUrl: String,
+        location: {
+          latitude: Number,
+          longitude: Number,
+        },
       },
-    },
-
-    punchOut: {
-      time: Date,
-
-      selfieUrl: String,
-
-      location: {
-        latitude: Number,
-        longitude: Number,
-      },
-    },
+    ],
 
     workingHours: {
       type: Number,
@@ -64,6 +61,18 @@ const attendanceSchema = new mongoose.Schema(
       },
 
       validatedAt: Date,
+    },
+
+    arrivalStatus: {
+      type: String,
+      enum: ["on-time", "late"],
+      default: "on-time",
+    },
+
+    departureStatus: {
+      type: String,
+      enum: ["regular", "early-departure"],
+      default: "regular",
     },
   },
   {

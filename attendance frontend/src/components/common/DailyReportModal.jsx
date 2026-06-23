@@ -45,6 +45,21 @@ export default function DailyReportModal({ isOpen, onClose, logs, title, isSingl
     }
   };
 
+  const getFirstPunchInObj = (punches) => {
+    if (!punches || punches.length === 0) return null;
+    return punches.find(p => p.type === 'in') || null;
+  };
+
+  const getLastPunchOutObj = (punches) => {
+    if (!punches || punches.length === 0) return null;
+    for (let i = punches.length - 1; i >= 0; i--) {
+      if (punches[i].type === 'out') {
+        return punches[i];
+      }
+    }
+    return null;
+  };
+
   const formatDateLabel = (dateStr) => {
     if (!dateStr) return '';
     return new Date(dateStr).toLocaleDateString(undefined, {
@@ -163,14 +178,14 @@ export default function DailyReportModal({ isOpen, onClose, logs, title, isSingl
 
                           {/* Punch In Time */}
                           <td className="py-4 px-4 align-middle font-mono text-xs text-theme-text print:text-black">
-                            {log.punchIn?.time ? new Date(log.punchIn.time).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '-'}
+                            {getFirstPunchInObj(log.punches)?.time ? new Date(getFirstPunchInObj(log.punches).time).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '-'}
                           </td>
 
                           {/* Punch In Selfie */}
                           <td className="py-4 px-4 align-middle text-center">
-                            {log.punchIn?.selfieUrl ? (
+                            {getFirstPunchInObj(log.punches)?.selfieUrl ? (
                               <img
-                                src={log.punchIn.selfieUrl}
+                                src={getFirstPunchInObj(log.punches).selfieUrl}
                                 alt="In Selfie"
                                 className="w-16 h-12 object-cover rounded border border-theme-border mx-auto"
                               />
@@ -181,12 +196,12 @@ export default function DailyReportModal({ isOpen, onClose, logs, title, isSingl
 
                           {/* Punch In Location */}
                           <td className="py-4 px-4 align-middle text-xs font-mono text-theme-text print:text-black">
-                            {log.punchIn?.location?.latitude ? (
+                            {getFirstPunchInObj(log.punches)?.location?.latitude ? (
                               <div className="flex items-center gap-1.5">
                                 <MapPin className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0 print:hidden" />
-                                <span>{log.punchIn.location.latitude.toFixed(4)}, {log.punchIn.location.longitude.toFixed(4)}</span>
+                                <span>{getFirstPunchInObj(log.punches).location.latitude.toFixed(4)}, {getFirstPunchInObj(log.punches).location.longitude.toFixed(4)}</span>
                                 <a
-                                  href={`https://www.google.com/maps?q=${log.punchIn.location.latitude},${log.punchIn.location.longitude}`}
+                                  href={`https://www.google.com/maps?q=${getFirstPunchInObj(log.punches).location.latitude},${getFirstPunchInObj(log.punches).location.longitude}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="text-violet-650 dark:text-violet-400 hover:text-violet-500 inline-flex items-center gap-0.5 ml-1 transition-colors print:hidden"
@@ -201,14 +216,14 @@ export default function DailyReportModal({ isOpen, onClose, logs, title, isSingl
 
                           {/* Punch Out Time */}
                           <td className="py-4 px-4 align-middle font-mono text-xs text-theme-text print:text-black">
-                            {log.punchOut?.time ? new Date(log.punchOut.time).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '-'}
+                            {getLastPunchOutObj(log.punches)?.time ? new Date(getLastPunchOutObj(log.punches).time).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '-'}
                           </td>
 
                           {/* Punch Out Selfie */}
                           <td className="py-4 px-4 align-middle text-center">
-                            {log.punchOut?.selfieUrl ? (
+                            {getLastPunchOutObj(log.punches)?.selfieUrl ? (
                               <img
-                                src={log.punchOut.selfieUrl}
+                                src={getLastPunchOutObj(log.punches).selfieUrl}
                                 alt="Out Selfie"
                                 className="w-16 h-12 object-cover rounded border border-theme-border mx-auto"
                               />
@@ -219,12 +234,12 @@ export default function DailyReportModal({ isOpen, onClose, logs, title, isSingl
 
                           {/* Punch Out Location */}
                           <td className="py-4 px-4 align-middle text-xs font-mono text-theme-text print:text-black">
-                            {log.punchOut?.location?.latitude ? (
+                            {getLastPunchOutObj(log.punches)?.location?.latitude ? (
                               <div className="flex items-center gap-1.5">
                                 <MapPin className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0 print:hidden" />
-                                <span>{log.punchOut.location.latitude.toFixed(4)}, {log.punchOut.location.longitude.toFixed(4)}</span>
+                                <span>{getLastPunchOutObj(log.punches).location.latitude.toFixed(4)}, {getLastPunchOutObj(log.punches).location.longitude.toFixed(4)}</span>
                                 <a
-                                  href={`https://www.google.com/maps?q=${log.punchOut.location.latitude},${log.punchOut.location.longitude}`}
+                                  href={`https://www.google.com/maps?q=${getLastPunchOutObj(log.punches).location.latitude},${getLastPunchOutObj(log.punches).location.longitude}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="text-violet-650 dark:text-violet-400 hover:text-violet-500 inline-flex items-center gap-0.5 ml-1 transition-colors print:hidden"
@@ -298,17 +313,17 @@ export default function DailyReportModal({ isOpen, onClose, logs, title, isSingl
                         <div className="space-y-1.5 text-xs">
                           <p className="font-bold text-violet-650 dark:text-violet-400 uppercase tracking-wider text-[10px]">Punch In</p>
                           <p className="font-mono text-theme-text">
-                            Time: {log.punchIn?.time ? new Date(log.punchIn.time).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '-'}
+                            Time: {getFirstPunchInObj(log.punches)?.time ? new Date(getFirstPunchInObj(log.punches).time).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '-'}
                           </p>
-                          {log.punchIn?.selfieUrl ? (
-                            <img src={log.punchIn.selfieUrl} alt="In Selfie" className="w-24 aspect-[4/3] object-cover rounded border border-theme-border" />
+                          {getFirstPunchInObj(log.punches)?.selfieUrl ? (
+                            <img src={getFirstPunchInObj(log.punches).selfieUrl} alt="In Selfie" className="w-24 aspect-[4/3] object-cover rounded border border-theme-border" />
                           ) : (
                             <p className="text-xs text-theme-muted italic">No selfie</p>
                           )}
-                          {log.punchIn?.location?.latitude ? (
+                          {getFirstPunchInObj(log.punches)?.location?.latitude ? (
                             <div className="flex items-center gap-1 font-mono text-theme-muted text-[10px]">
-                              <span>{log.punchIn.location.latitude.toFixed(4)}, {log.punchIn.location.longitude.toFixed(4)}</span>
-                              <a href={`https://www.google.com/maps?q=${log.punchIn.location.latitude},${log.punchIn.location.longitude}`} target="_blank" rel="noopener noreferrer" className="text-violet-650 dark:text-violet-400 hover:text-violet-500"><ExternalLink className="w-3 h-3" /></a>
+                              <span>{getFirstPunchInObj(log.punches).location.latitude.toFixed(4)}, {getFirstPunchInObj(log.punches).location.longitude.toFixed(4)}</span>
+                              <a href={`https://www.google.com/maps?q=${getFirstPunchInObj(log.punches).location.latitude},${getFirstPunchInObj(log.punches).location.longitude}`} target="_blank" rel="noopener noreferrer" className="text-violet-650 dark:text-violet-400 hover:text-violet-500"><ExternalLink className="w-3 h-3" /></a>
                             </div>
                           ) : (
                             <p className="text-xs text-theme-muted italic">No location</p>
@@ -319,17 +334,17 @@ export default function DailyReportModal({ isOpen, onClose, logs, title, isSingl
                         <div className="space-y-1.5 text-xs border-t sm:border-t-0 sm:border-l border-theme-border/60 pt-3 sm:pt-0 sm:pl-3">
                           <p className="font-bold text-violet-650 dark:text-violet-400 uppercase tracking-wider text-[10px]">Punch Out</p>
                           <p className="font-mono text-theme-text">
-                            Time: {log.punchOut?.time ? new Date(log.punchOut.time).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '-'}
+                            Time: {getLastPunchOutObj(log.punches)?.time ? new Date(getLastPunchOutObj(log.punches).time).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '-'}
                           </p>
-                          {log.punchOut?.selfieUrl ? (
-                            <img src={log.punchOut.selfieUrl} alt="Out Selfie" className="w-24 aspect-[4/3] object-cover rounded border border-theme-border" />
+                          {getLastPunchOutObj(log.punches)?.selfieUrl ? (
+                            <img src={getLastPunchOutObj(log.punches).selfieUrl} alt="Out Selfie" className="w-24 aspect-[4/3] object-cover rounded border border-theme-border" />
                           ) : (
                             <p className="text-xs text-theme-muted italic">No selfie</p>
                           )}
-                          {log.punchOut?.location?.latitude ? (
+                          {getLastPunchOutObj(log.punches)?.location?.latitude ? (
                             <div className="flex items-center gap-1 font-mono text-theme-muted text-[10px]">
-                              <span>{log.punchOut.location.latitude.toFixed(4)}, {log.punchOut.location.longitude.toFixed(4)}</span>
-                              <a href={`https://www.google.com/maps?q=${log.punchOut.location.latitude},${log.punchOut.location.longitude}`} target="_blank" rel="noopener noreferrer" className="text-violet-650 dark:text-violet-400 hover:text-violet-500"><ExternalLink className="w-3 h-3" /></a>
+                              <span>{getLastPunchOutObj(log.punches).location.latitude.toFixed(4)}, {getLastPunchOutObj(log.punches).location.longitude.toFixed(4)}</span>
+                              <a href={`https://www.google.com/maps?q=${getLastPunchOutObj(log.punches).location.latitude},${getLastPunchOutObj(log.punches).location.longitude}`} target="_blank" rel="noopener noreferrer" className="text-violet-650 dark:text-violet-400 hover:text-violet-500"><ExternalLink className="w-3 h-3" /></a>
                             </div>
                           ) : (
                             <p className="text-xs text-theme-muted italic">No location</p>

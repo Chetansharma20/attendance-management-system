@@ -50,6 +50,22 @@ export default function TeamAttendance() {
     }
   };
 
+  const getFirstPunchIn = (punches) => {
+    if (!punches || punches.length === 0) return null;
+    const firstIn = punches.find((p) => p.type === 'in');
+    return firstIn ? firstIn.time : null;
+  };
+
+  const getLastPunchOut = (punches) => {
+    if (!punches || punches.length === 0) return null;
+    for (let i = punches.length - 1; i >= 0; i--) {
+      if (punches[i].type === 'out') {
+        return punches[i].time;
+      }
+    }
+    return null;
+  };
+
   // Helper to format date
   const formatDate = (dateStr) => {
     if (!dateStr) return '-';
@@ -145,8 +161,26 @@ export default function TeamAttendance() {
                         <p className="text-xs text-theme-muted">{empEmail}</p>
                       </td>
                       <td className="py-4 px-5 text-theme-text">{formatDate(log.date)}</td>
-                      <td className="py-4 px-5 font-mono text-theme-text text-xs">{formatTime(log.punchIn?.time)}</td>
-                      <td className="py-4 px-5 font-mono text-theme-text text-xs">{formatTime(log.punchOut?.time)}</td>
+                      <td className="py-4 px-5 font-mono text-theme-text text-xs">
+                        <div className="flex flex-col gap-0.5">
+                          <span>{formatTime(getFirstPunchIn(log.punches))}</span>
+                          {log.arrivalStatus === 'late' ? (
+                            <span className="text-[9px] font-bold text-red-500 uppercase tracking-wider block">Late</span>
+                          ) : log.arrivalStatus === 'on-time' ? (
+                            <span className="text-[9px] font-bold text-emerald-500 uppercase tracking-wider block">On-Time</span>
+                          ) : null}
+                        </div>
+                      </td>
+                      <td className="py-4 px-5 font-mono text-theme-text text-xs">
+                        <div className="flex flex-col gap-0.5">
+                          <span>{formatTime(getLastPunchOut(log.punches))}</span>
+                          {log.departureStatus === 'early-departure' ? (
+                            <span className="text-[9px] font-bold text-amber-500 uppercase tracking-wider block">Early Leave</span>
+                          ) : log.departureStatus === 'regular' ? (
+                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Regular</span>
+                          ) : null}
+                        </div>
+                      </td>
                       <td className="py-4 px-5 text-theme-bright font-medium font-mono">
                         {log.workingHours ? `${log.workingHours.toFixed(2)}h` : '-'}
                       </td>
@@ -291,11 +325,25 @@ export default function TeamAttendance() {
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   <div>
                     <span className="text-theme-muted block mb-0.5 font-medium">Punch In:</span>
-                    <span className="font-mono text-theme-text">{formatTime(log.punchIn?.time)}</span>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="font-mono text-theme-text">{formatTime(getFirstPunchIn(log.punches))}</span>
+                      {log.arrivalStatus === 'late' ? (
+                        <span className="text-[9px] font-bold text-red-500 uppercase tracking-wider">Late</span>
+                      ) : log.arrivalStatus === 'on-time' ? (
+                        <span className="text-[9px] font-bold text-emerald-500 uppercase tracking-wider">On-Time</span>
+                      ) : null}
+                    </div>
                   </div>
                   <div>
                     <span className="text-theme-muted block mb-0.5 font-medium">Punch Out:</span>
-                    <span className="font-mono text-theme-text">{formatTime(log.punchOut?.time)}</span>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="font-mono text-theme-text">{formatTime(getLastPunchOut(log.punches))}</span>
+                      {log.departureStatus === 'early-departure' ? (
+                        <span className="text-[9px] font-bold text-amber-500 uppercase tracking-wider">Early Leave</span>
+                      ) : log.departureStatus === 'regular' ? (
+                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Regular</span>
+                      ) : null}
+                    </div>
                   </div>
                   <div>
                     <span className="text-theme-muted block mb-0.5 font-medium">Working Hours:</span>
@@ -345,40 +393,25 @@ export default function TeamAttendance() {
                 {/* Collapsible Details */}
                 {isExpanded && (
                   <div className="bg-theme-card border border-theme-border rounded-lg p-3 space-y-3">
-                    {/* Punch In */}
-                    <div className="space-y-2">
-                      <p className="text-xs font-bold text-violet-650 dark:text-violet-400 uppercase tracking-wider">Punch In Verification</p>
-                      {log.punchIn?.selfieUrl ? (
-                        <img src={log.punchIn.selfieUrl} alt="In Selfie" className="w-32 aspect-[4/3] object-cover rounded border border-theme-border" />
-                      ) : (
-                        <p className="text-xs text-theme-muted italic">No selfie captured.</p>
-                      )}
-                      {log.punchIn?.location?.latitude ? (
-                        <div className="flex items-center gap-1.5 text-xs font-mono text-theme-text">
-                          <span>{log.punchIn.location.latitude.toFixed(6)}, {log.punchIn.location.longitude.toFixed(6)}</span>
-                          <a href={`https://www.google.com/maps?q=${log.punchIn.location.latitude},${log.punchIn.location.longitude}`} target="_blank" rel="noopener noreferrer" className="text-violet-650 dark:text-violet-400 hover:text-violet-500"><ExternalLink className="w-3 h-3" /></a>
-                        </div>
-                      ) : (
-                        <p className="text-xs text-theme-muted italic">No GPS coordinates.</p>
-                      )}
-                    </div>
-                    {/* Punch Out */}
-                    <div className="space-y-2 border-t border-theme-border/60 pt-3">
-                      <p className="text-xs font-bold text-violet-650 dark:text-violet-400 uppercase tracking-wider">Punch Out Verification</p>
-                      {log.punchOut?.selfieUrl ? (
-                        <img src={log.punchOut.selfieUrl} alt="Out Selfie" className="w-32 aspect-[4/3] object-cover rounded border border-theme-border" />
-                      ) : (
-                        <p className="text-xs text-theme-muted italic">No selfie captured.</p>
-                      )}
-                      {log.punchOut?.location?.latitude ? (
-                        <div className="flex items-center gap-1.5 text-xs font-mono text-theme-text">
-                          <span>{log.punchOut.location.latitude.toFixed(6)}, {log.punchOut.location.longitude.toFixed(6)}</span>
-                          <a href={`https://www.google.com/maps?q=${log.punchOut.location.latitude},${log.punchOut.location.longitude}`} target="_blank" rel="noopener noreferrer" className="text-violet-650 dark:text-violet-400 hover:text-violet-500"><ExternalLink className="w-3 h-3" /></a>
-                        </div>
-                      ) : (
-                        <p className="text-xs text-theme-muted italic">No GPS coordinates.</p>
-                      )}
-                    </div>
+                    <p className="text-xs font-bold text-violet-650 dark:text-violet-400 uppercase tracking-wider border-b border-theme-border/20 pb-1">Verification History ({log.punches?.length || 0})</p>
+                    {(log.punches || []).map((punch, idx) => (
+                      <div key={idx} className="space-y-2 text-xs border-b border-theme-border/10 pb-2.5 last:border-b-0 last:pb-0">
+                        <p className="font-bold text-theme-bright">Punch {punch.type === 'in' ? 'In' : 'Out'} {formatTime(punch.time)}</p>
+                        {punch.selfieUrl ? (
+                          <img src={punch.selfieUrl} alt={`Selfie ${idx}`} className="w-24 aspect-[4/3] object-cover rounded border border-theme-border my-1" />
+                        ) : (
+                          <p className="text-[10px] text-theme-muted italic">No selfie captured.</p>
+                        )}
+                        {punch.location?.latitude ? (
+                          <div className="flex items-center gap-1 font-mono text-theme-muted text-[10px]">
+                            <span>{punch.location.latitude.toFixed(6)}, {punch.location.longitude.toFixed(6)}</span>
+                            <a href={`https://www.google.com/maps?q=${punch.location.latitude},${punch.location.longitude}`} target="_blank" rel="noopener noreferrer" className="text-violet-650 dark:text-violet-400"><ExternalLink className="w-3 h-3" /></a>
+                          </div>
+                        ) : (
+                          <p className="text-[10px] text-theme-muted italic">No GPS coordinates.</p>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 )}
 

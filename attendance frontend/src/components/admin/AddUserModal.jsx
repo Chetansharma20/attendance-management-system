@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { X, UserPlus, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import { useRegisterMutation, useFetchUsersQuery } from '../../redux/api/authApi.js';
+import { useGetShiftsQuery } from '../../redux/api/settingsApi.js';
 
 const INITIAL_FORM = {
   name: '',
@@ -9,6 +10,7 @@ const INITIAL_FORM = {
   password: '',
   role: 'employee',
   managerId: '',
+  shiftId: '',
 };
 
 export default function AddUserModal({ isOpen, onClose }) {
@@ -21,6 +23,9 @@ export default function AddUserModal({ isOpen, onClose }) {
 
   const { data: managersResponse } = useFetchUsersQuery({ role: 'manager', limit: 100 });
   const managers = managersResponse?.data?.users || [];
+
+  const { data: shiftsResponse } = useGetShiftsQuery();
+  const shifts = shiftsResponse?.data || [];
 
   // Reset on open/close
   useEffect(() => {
@@ -56,6 +61,7 @@ export default function AddUserModal({ isOpen, onClose }) {
       password: form.password,
       role: form.role,
       ...(form.role === 'employee' ? { managerId: form.managerId } : {}),
+      shiftId: form.shiftId || null,
     };
 
     try {
@@ -211,6 +217,29 @@ export default function AddUserModal({ isOpen, onClose }) {
               )}
             </div>
           )}
+
+          {/* Shift Assignment Selection */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-theme-text uppercase tracking-wider">
+              Assign Work Shift
+            </label>
+            <select
+              name="shiftId"
+              value={form.shiftId}
+              onChange={handleChange}
+              className="w-full bg-theme-bg border border-theme-input-border rounded-xl px-4 py-2.5 text-sm text-theme-bright focus:outline-none focus:border-violet-500 transition-colors"
+            >
+              <option value="">— Use Global Settings Timing —</option>
+              {shifts.map((s) => (
+                <option key={s._id} value={s._id}>
+                  {s.name} ({s.startTime} - {s.endTime})
+                </option>
+              ))}
+            </select>
+            <p className="text-[10px] text-theme-muted">
+              Select a custom shift layout, or leave blank to fall back to the default company schedule.
+            </p>
+          </div>
 
           {/* Actions */}
           <div className="flex items-center gap-3 pt-2">

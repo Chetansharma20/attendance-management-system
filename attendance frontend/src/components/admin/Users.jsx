@@ -124,9 +124,10 @@ export default function UsersList() {
                 <thead>
                   <tr className="border-b border-theme-border text-xs font-semibold text-theme-muted uppercase tracking-wider bg-theme-card-hover/50">
                     <th className="py-4 px-5 w-1/4">Name</th>
-                    <th className="py-4 px-5 w-1/3">Email</th>
-                    <th className="py-4 px-5 w-1/5">Role</th>
-                    <th className="py-4 px-5 w-1/5">Created At</th>
+                    <th className="py-4 px-5 w-1/4">Email</th>
+                    <th className="py-4 px-5 w-1/6">Role</th>
+                    <th className="py-4 px-5 w-1/6">Shift</th>
+                    <th className="py-4 px-5 w-1/6">Created At</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-theme-border/60 text-sm">
@@ -144,6 +145,11 @@ export default function UsersList() {
                         }`}>
                           {u.role}
                         </span>
+                      </td>
+                      <td className="py-4 px-5 text-theme-text font-medium">
+                        {u.shiftId?.name || (
+                          <span className="text-theme-muted italic font-normal">Default</span>
+                        )}
                       </td>
                       <td className="py-4 px-5 text-theme-muted">{formatDate(u.createdAt)}</td>
                     </tr>
@@ -172,6 +178,10 @@ export default function UsersList() {
                     <p className="text-theme-text">
                       <span className="text-theme-muted font-medium">Email: </span>
                       {u.email}
+                    </p>
+                    <p className="text-theme-text">
+                      <span className="text-theme-muted font-medium">Shift: </span>
+                      {u.shiftId?.name || <span className="text-theme-muted italic">Default Timings</span>}
                     </p>
                     <p className="text-theme-text">
                       <span className="text-theme-muted font-medium">Joined On: </span>

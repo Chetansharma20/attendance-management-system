@@ -17,16 +17,22 @@ export default function AdminSettings() {
   const [geofenceLatitude, setGeofenceLatitude] = useState(0);
   const [geofenceLongitude, setGeofenceLongitude] = useState(0);
   const [geofenceRadius, setGeofenceRadius] = useState(100);
+  const [workStartTime, setWorkStartTime] = useState("09:00");
+  const [workEndTime, setWorkEndTime] = useState("18:00");
+  const [gracePeriod, setGracePeriod] = useState(15);
   const [locationMessage, setLocationMessage] = useState('');
   const [locationSuccess, setLocationSuccess] = useState(null);
 
   useEffect(() => {
     if (settingsResponse?.data) {
-      const { geofenceEnabled, geofenceLatitude, geofenceLongitude, geofenceRadius } = settingsResponse.data;
+      const { geofenceEnabled, geofenceLatitude, geofenceLongitude, geofenceRadius, workStartTime, workEndTime, gracePeriod } = settingsResponse.data;
       setGeofenceEnabled(geofenceEnabled);
       setGeofenceLatitude(geofenceLatitude);
       setGeofenceLongitude(geofenceLongitude);
       setGeofenceRadius(geofenceRadius);
+      if (workStartTime) setWorkStartTime(workStartTime);
+      if (workEndTime) setWorkEndTime(workEndTime);
+      if (gracePeriod !== undefined) setGracePeriod(gracePeriod);
     }
   }, [settingsResponse]);
 
@@ -62,11 +68,14 @@ export default function AdminSettings() {
         geofenceLatitude: Number(geofenceLatitude),
         geofenceLongitude: Number(geofenceLongitude),
         geofenceRadius: Number(geofenceRadius),
+        workStartTime,
+        workEndTime,
+        gracePeriod: Number(gracePeriod),
       }).unwrap();
-      alert('Geofence settings updated successfully!');
+      alert('Settings updated successfully!');
       refetch();
     } catch (err) {
-      alert(err?.data?.message || err?.error || 'Failed to update geofence settings');
+      alert(err?.data?.message || err?.error || 'Failed to update settings');
     }
   };
 
@@ -126,6 +135,45 @@ export default function AdminSettings() {
               />
               <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-650"></div>
             </label>
+          </div>
+
+          {/* Shift Schedule Configurations */}
+          <div className="p-5 rounded-2xl border border-theme-border bg-theme-bg/20 space-y-4">
+            <h3 className="text-sm font-bold text-theme-bright border-b border-theme-border pb-1">Expected Office Timings</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-theme-muted">Expected Start Time</label>
+                <input
+                  type="time"
+                  required
+                  value={workStartTime}
+                  onChange={(e) => setWorkStartTime(e.target.value)}
+                  className="w-full bg-theme-card border border-theme-input-border rounded-xl px-3 py-2 text-sm text-theme-bright focus:outline-none focus:border-violet-500 transition-colors"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-theme-muted">Expected End Time</label>
+                <input
+                  type="time"
+                  required
+                  value={workEndTime}
+                  onChange={(e) => setWorkEndTime(e.target.value)}
+                  className="w-full bg-theme-card border border-theme-input-border rounded-xl px-3 py-2 text-sm text-theme-bright focus:outline-none focus:border-violet-500 transition-colors"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-theme-muted">Grace Period (Minutes)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="120"
+                  required
+                  value={gracePeriod}
+                  onChange={(e) => setGracePeriod(e.target.value)}
+                  className="w-full bg-theme-card border border-theme-input-border rounded-xl px-3 py-2 text-sm text-theme-bright focus:outline-none focus:border-violet-500 transition-colors"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Coordinate Config Block */}
