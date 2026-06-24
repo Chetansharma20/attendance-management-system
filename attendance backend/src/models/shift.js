@@ -21,6 +21,20 @@ const shiftSchema = new mongoose.Schema(
       required: true,
       default: 15, // in minutes
     },
+    breakPolicy: {
+      tea: {
+        maxCount: { type: Number, default: 2 },
+        duration: { type: Number, default: 15 } // in minutes
+      },
+      lunch: {
+        enabled: { type: Boolean, default: true },
+        duration: { type: Number, default: 60 } // in minutes
+      },
+      dinner: {
+        enabled: { type: Boolean, default: false },
+        duration: { type: Number, default: 60 } // in minutes
+      }
+    },
   },
   {
     timestamps: true,

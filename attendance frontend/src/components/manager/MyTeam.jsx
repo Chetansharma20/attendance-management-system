@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useGetMyTeamQuery } from '../../redux/api/authApi.js';
-import { useManagerPunchMutation } from '../../redux/api/attendanceApi.js';
-import { Users, RefreshCw, AlertCircle, UserCheck, LogIn, LogOut } from 'lucide-react';
+import { Users, RefreshCw, AlertCircle, UserCheck } from 'lucide-react';
 
 export default function MyTeam() {
   const {
@@ -12,12 +11,6 @@ export default function MyTeam() {
     refetch,
   } = useGetMyTeamQuery();
 
-  const [managerPunch, { isLoading: isPunching }] = useManagerPunchMutation();
-
-  // Track which employee is currently being processed
-  const [loadingEmployeeId, setLoadingEmployeeId] = useState(null);
-  // Local status overrides for optimistic UI updates
-  const [localPunchStatus, setLocalPunchStatus] = useState({});
   // Toast notification state
   const [toast, setToast] = useState(null);
 
@@ -37,76 +30,8 @@ export default function MyTeam() {
     });
   };
 
-  const handleMarkAttendance = async (employeeId, type) => {
-    setLoadingEmployeeId(employeeId);
-    try {
-      await managerPunch({ employeeId, type }).unwrap();
-      // Optimistically update local state
-      setLocalPunchStatus((prev) => ({ ...prev, [employeeId]: type }));
-      showToast(
-        `Successfully clocked ${type === 'in' ? 'in' : 'out'} employee.`,
-        'success'
-      );
-      // Refetch to sync with server
-      refetch();
-    } catch (err) {
-      showToast(
-        err?.data?.message || err?.error || `Failed to clock ${type}`,
-        'error'
-      );
-    } finally {
-      setLoadingEmployeeId(null);
-    }
-  };
-
-  const getLastPunchType = (emp) => {
-    // Use local optimistic override if present, otherwise use server data
-    if (localPunchStatus[emp._id] !== undefined) return localPunchStatus[emp._id];
-    return emp.lastPunchType ?? null;
-  };
-
-  const AttendanceButton = ({ emp }) => {
-    const lastPunch = getLastPunchType(emp);
-    const isThisLoading = loadingEmployeeId === emp._id;
-    const isClockedIn = lastPunch === 'in';
-
-    if (isClockedIn) {
-      return (
-        <button
-          onClick={() => handleMarkAttendance(emp._id, 'out')}
-          disabled={isPunching}
-          className="inline-flex items-center gap-1.5 bg-amber-500/10 hover:bg-amber-500/20 disabled:opacity-50 text-amber-600 dark:text-amber-400 border border-amber-500/30 font-semibold text-xs px-3 py-1.5 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
-          title="Clock this employee out"
-        >
-          {isThisLoading ? (
-            <span className="w-3.5 h-3.5 border-2 border-amber-400/30 border-t-amber-400 rounded-full animate-spin" />
-          ) : (
-            <LogOut className="w-3.5 h-3.5" />
-          )}
-          <span>Clock Out</span>
-        </button>
-      );
-    }
-
-    return (
-      <button
-        onClick={() => handleMarkAttendance(emp._id, 'in')}
-        disabled={isPunching}
-        className="inline-flex items-center gap-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 disabled:opacity-50 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-semibold text-xs px-3 py-1.5 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
-        title="Clock this employee in"
-      >
-        {isThisLoading ? (
-          <span className="w-3.5 h-3.5 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin" />
-        ) : (
-          <LogIn className="w-3.5 h-3.5" />
-        )}
-        <span>Clock In</span>
-      </button>
-    );
-  };
-
   const StatusBadge = ({ emp }) => {
-    const lastPunch = getLastPunchType(emp);
+    const lastPunch = emp.lastPunchType ?? null;
     if (lastPunch === 'in') {
       return (
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
@@ -197,7 +122,6 @@ export default function MyTeam() {
                   <th className="py-4 px-5">Email</th>
                   <th className="py-4 px-5">Today's Status</th>
                   <th className="py-4 px-5">Joined On</th>
-                  <th className="py-4 px-5 text-center">Mark Attendance</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-theme-border/60 text-sm">
@@ -217,9 +141,6 @@ export default function MyTeam() {
                       <StatusBadge emp={emp} />
                     </td>
                     <td className="py-4 px-5 text-theme-muted">{formatDate(emp.createdAt)}</td>
-                    <td className="py-4 px-5 text-center">
-                      <AttendanceButton emp={emp} />
-                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -249,9 +170,6 @@ export default function MyTeam() {
                     <span className="text-theme-muted font-medium">Joined On: </span>
                     {formatDate(emp.createdAt)}
                   </p>
-                </div>
-                <div className="pt-1">
-                  <AttendanceButton emp={emp} />
                 </div>
               </div>
             ))}

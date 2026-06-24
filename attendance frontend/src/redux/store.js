@@ -5,6 +5,7 @@ import { attendanceApi } from './api/attendanceApi.js';
 import { overtimeApi } from './api/overtimeApi.js';
 import { settingsApi } from './api/settingsApi.js';
 import { leaveApi } from './api/leaveApi.js';
+import { notificationApi } from './api/notificationApi.js';
 
 const logoutMiddleware = (store) => (next) => (action) => {
   if (action.type === 'auth/clearUser') {
@@ -13,6 +14,7 @@ const logoutMiddleware = (store) => (next) => (action) => {
     store.dispatch(overtimeApi.util.resetApiState());
     store.dispatch(settingsApi.util.resetApiState());
     store.dispatch(leaveApi.util.resetApiState());
+    store.dispatch(notificationApi.util.resetApiState());
   }
   return next(action);
 };
@@ -28,6 +30,7 @@ const store = configureStore({
     [overtimeApi.reducerPath]: overtimeApi.reducer,
     [settingsApi.reducerPath]: settingsApi.reducer,
     [leaveApi.reducerPath]: leaveApi.reducer,
+    [notificationApi.reducerPath]: notificationApi.reducer,
   },
 
   // RTK Query middleware handles caching, invalidation, polling
@@ -38,7 +41,8 @@ const store = configureStore({
       attendanceApi.middleware,
       overtimeApi.middleware,
       settingsApi.middleware,
-      leaveApi.middleware
+      leaveApi.middleware,
+      notificationApi.middleware
     ),
 });
 

@@ -67,6 +67,7 @@ export default function MyLeaves() {
   const [applyLeave, { isLoading: applying }] = useApplyLeaveMutation();
 
   const [form, setForm] = useState({ leaveType: 'sick', startDate: '', endDate: '', reason: '' });
+  const [isSingleDay, setIsSingleDay] = useState(false);
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
 
@@ -77,7 +78,14 @@ export default function MyLeaves() {
   const previewDays = useMemo(() => countWeekdays(form.startDate, form.endDate), [form.startDate, form.endDate]);
 
   const handleChange = (e) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setForm((prev) => {
+      const updated = { ...prev, [name]: value };
+      if (isSingleDay && name === 'startDate') {
+        updated.endDate = value;
+      }
+      return updated;
+    });
     setFormError('');
     setFormSuccess('');
   };
@@ -180,6 +188,25 @@ export default function MyLeaves() {
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5 max-w-2xl">
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="singleDay"
+              checked={isSingleDay}
+              onChange={(e) => {
+                const checked = e.target.checked;
+                setIsSingleDay(checked);
+                if (checked && form.startDate) {
+                  setForm(prev => ({ ...prev, endDate: prev.startDate }));
+                }
+              }}
+              className="rounded border-theme-input-border text-violet-600 focus:ring-violet-500 cursor-pointer w-4 h-4"
+            />
+            <label htmlFor="singleDay" className="text-xs font-semibold text-theme-muted cursor-pointer select-none">
+              Single Day Leave
+            </label>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-theme-muted">Leave Type</label>
@@ -202,19 +229,23 @@ export default function MyLeaves() {
                 name="startDate"
                 value={form.startDate}
                 onChange={handleChange}
-                className="w-full bg-theme-bg border border-theme-input-border text-theme-text rounded-lg px-3 py-2 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-colors text-sm"
+                onClick={(e) => e.target.showPicker?.()}
+                className="w-full bg-theme-bg border border-theme-input-border text-theme-text rounded-lg px-3 py-2 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-colors text-sm cursor-pointer"
               />
             </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-theme-muted">End Date</label>
-              <input
-                type="date"
-                name="endDate"
-                value={form.endDate}
-                onChange={handleChange}
-                className="w-full bg-theme-bg border border-theme-input-border text-theme-text rounded-lg px-3 py-2 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-colors text-sm"
-              />
-            </div>
+            {!isSingleDay && (
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-theme-muted">End Date</label>
+                <input
+                  type="date"
+                  name="endDate"
+                  value={form.endDate}
+                  onChange={handleChange}
+                  onClick={(e) => e.target.showPicker?.()}
+                  className="w-full bg-theme-bg border border-theme-input-border text-theme-text rounded-lg px-3 py-2 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-colors text-sm cursor-pointer"
+                />
+              </div>
+            )}
           </div>
 
           {form.startDate && form.endDate && (

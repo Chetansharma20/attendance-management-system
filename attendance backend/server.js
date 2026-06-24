@@ -2,14 +2,17 @@ import express from 'express';
 import 'dotenv/config';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import { createServer } from 'http';
 
 import connectDB from './src/config/db.js';
 import { setupLogger } from './src/middleware/loggerMiddleware.js';
 import { errorHandler } from './src/middleware/errorMiddleware.js';
 import apiRouter from './src/routes.js';
 import { initCronJobs } from './src/config/cron.js';
+import { setupSocket } from './src/config/socket.js';
 
 const server = express();
+const httpServer = createServer(server);
 
 connectDB();
 initCronJobs();
@@ -42,6 +45,10 @@ server.use(cors({
   },
   credentials: true,
 }));
+
+// Initialize Socket.io
+setupSocket(httpServer, allowedOrigins);
+
 server.use(express.json());
 server.use(cookieParser());
 
@@ -58,6 +65,6 @@ server.get('/', (req, res) => {
 server.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
+httpServer.listen(PORT, () => {
   console.log(`server running on port ${PORT}`);
 });

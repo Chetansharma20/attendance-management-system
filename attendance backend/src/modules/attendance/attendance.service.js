@@ -3,55 +3,19 @@ import User from "../../models/users.js";
 import Overtime from "../../models/overtime.js";
 import Settings from "../../models/settings.js";
 import { ApiError } from "../../utils/ApiError.js";
-
-const calculateDistance = (lat1, lon1, lat2, lon2) => {
-  const R = 6371e3;
-  const phi1 = (lat1 * Math.PI) / 180;
-  const phi2 = (lat2 * Math.PI) / 180;
-  const deltaPhi = ((lat2 - lat1) * Math.PI) / 180;
-  const deltaLambda = ((lon2 - lon1) * Math.PI) / 180;
-
-  const a =
-    Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
-    Math.cos(phi1) *
-      Math.cos(phi2) *
-      Math.sin(deltaLambda / 2) *
-      Math.sin(deltaLambda / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-  return R * c;
-};
-
-const calculateWorkingHours = (punches) => {
-  let totalMs = 0;
-  for (let i = 0; i < punches.length - 1; i += 2) {
-    const punchIn = punches[i];
-    const punchOut = punches[i + 1];
-    if (punchIn.type === "in" && punchOut && punchOut.type === "out") {
-      totalMs += new Date(punchOut.time) - new Date(punchIn.time);
-    }
-  }
-  return Number((totalMs / (1000 * 60 * 60)).toFixed(2));
-};
+import {
+  getTodayRange,
+  validateGeofence,
+  getUserBreakPolicy,
+  calculateWorkingHours,
+} from "../../utils/attendanceHelpers.js";
 
 export const punchInService = async (userId, latitude, longitude, selfieUrl) => {
   const settings = await Settings.findOne();
-  if (settings && settings.geofenceEnabled) {
-    if (latitude === undefined || longitude === undefined || latitude === null || longitude === null) {
-      throw new ApiError(400, "Location coordinates are required when geofencing is enabled");
-    }
-    const distance = calculateDistance(settings.geofenceLatitude, settings.geofenceLongitude, latitude, longitude);
-    if (distance > settings.geofenceRadius) {
-      throw new ApiError(400, `Clock-in blocked: You are outside the allowed geofence boundary (Distance: ${distance.toFixed(1)}m, Limit: ${settings.geofenceRadius}m)`);
-    }
-  }
+  validateGeofence(settings, latitude, longitude, "Clock-in");
 
-  const startOfDay = new Date();
-  startOfDay.setHours(0, 0, 0, 0);
-  const endOfDay = new Date();
-  endOfDay.setHours(23, 59, 59, 999);
-
-  let attendance = await Attendance.findOne({ employeeId: userId, date: { $gte: startOfDay, $lte: endOfDay } });
+  const { start, end } = getTodayRange();
+  let attendance = await Attendance.findOne({ employeeId: userId, date: { $gte: start, $lte: end } });
 
   const newPunch = { type: "in", time: new Date(), selfieUrl, location: { latitude, longitude } };
 
@@ -81,8 +45,13 @@ export const punchInService = async (userId, latitude, longitude, selfieUrl) => 
     });
   } else {
     const lastPunch = attendance.punches[attendance.punches.length - 1];
-    if (lastPunch && lastPunch.type === "in") {
-      throw new ApiError(400, "You are already punched in. Please punch out first.");
+    if (lastPunch) {
+      if (lastPunch.type === "in") {
+        throw new ApiError(400, "You are already punched in. Please punch out first.");
+      }
+      if (lastPunch.type === "out") {
+        throw new ApiError(400, "You have already completed your punch in and punch out for today.");
+      }
     }
     attendance.punches.push(newPunch);
     attendance.completionStatus = "incomplete";
@@ -94,22 +63,10 @@ export const punchInService = async (userId, latitude, longitude, selfieUrl) => 
 
 export const punchOutService = async (userId, latitude, longitude, selfieUrl) => {
   const settings = await Settings.findOne();
-  if (settings && settings.geofenceEnabled) {
-    if (latitude === undefined || longitude === undefined || latitude === null || longitude === null) {
-      throw new ApiError(400, "Location coordinates are required when geofencing is enabled");
-    }
-    const distance = calculateDistance(settings.geofenceLatitude, settings.geofenceLongitude, latitude, longitude);
-    if (distance > settings.geofenceRadius) {
-      throw new ApiError(400, `Clock-out blocked: You are outside the allowed geofence boundary (Distance: ${distance.toFixed(1)}m, Limit: ${settings.geofenceRadius}m)`);
-    }
-  }
+  validateGeofence(settings, latitude, longitude, "Clock-out");
 
-  const startOfDay = new Date();
-  startOfDay.setHours(0, 0, 0, 0);
-  const endOfDay = new Date();
-  endOfDay.setHours(23, 59, 59, 999);
-
-  const attendance = await Attendance.findOne({ employeeId: userId, date: { $gte: startOfDay, $lte: endOfDay } });
+  const { start, end } = getTodayRange();
+  const attendance = await Attendance.findOne({ employeeId: userId, date: { $gte: start, $lte: end } });
 
   if (!attendance || attendance.punches.length === 0) {
     throw new ApiError(404, "No punch in found for today");
@@ -138,7 +95,16 @@ export const punchOutService = async (userId, latitude, longitude, selfieUrl) =>
   }
 
   attendance.departureStatus = departureStatus;
-  const workingHours = calculateWorkingHours(attendance.punches);
+
+  // Auto-end any active break at the time of punch out
+  if (attendance.breaks && attendance.breaks.length > 0) {
+    const activeBreak = attendance.breaks.find(b => !b.endTime);
+    if (activeBreak) {
+      activeBreak.endTime = new Date();
+    }
+  }
+
+  const workingHours = calculateWorkingHours(attendance.punches, attendance.breaks);
   attendance.workingHours = workingHours;
   attendance.completionStatus = workingHours >= 8 ? "completed" : "incomplete";
 
@@ -196,86 +162,6 @@ export const getTeamAttendanceService = async (managerId) => {
   });
 };
 
-export const managerPunchService = async (managerId, managerRole, employeeId, type) => {
-  const employee = await User.findById(employeeId);
-  if (!employee || employee.role !== "employee") throw new ApiError(404, "Employee not found");
-
-  if (managerRole !== "admin") {
-    if (!employee.managerId || employee.managerId.toString() !== managerId.toString()) {
-      throw new ApiError(403, "You are not authorized to mark attendance for this employee");
-    }
-  }
-
-  const startOfDay = new Date();
-  startOfDay.setHours(0, 0, 0, 0);
-  const endOfDay = new Date();
-  endOfDay.setHours(23, 59, 59, 999);
-
-  const settings = await Settings.findOne();
-  const now = new Date();
-  const newPunch = { type, time: now, selfieUrl: "MANAGER_MANUAL_PUNCH", location: { latitude: 0, longitude: 0 } };
-
-  let attendance = await Attendance.findOne({ employeeId, date: { $gte: startOfDay, $lte: endOfDay } });
-
-  if (type === "in") {
-    const employeeWithShift = await User.findById(employeeId).populate("shiftId");
-    const assignedShift = employeeWithShift?.shiftId;
-    let arrivalStatus = "on-time";
-    const startTime = assignedShift ? assignedShift.startTime : (settings?.workStartTime || "09:00");
-    const graceMin = assignedShift ? assignedShift.gracePeriod : (settings?.gracePeriod || 15);
-
-    if (startTime) {
-      const [startHour, startMinute] = startTime.split(":").map(Number);
-      const shiftStart = new Date(now);
-      shiftStart.setHours(startHour, startMinute, 0, 0);
-      const cutoffTime = new Date(shiftStart.getTime() + graceMin * 60 * 1000);
-      if (now > cutoffTime) arrivalStatus = "late";
-    }
-
-    if (!attendance) {
-      attendance = await Attendance.create({
-        employeeId, date: now, punches: [newPunch], arrivalStatus,
-        completionStatus: "incomplete",
-        validation: { status: "pending", remarks: "Manually clocked in by manager — awaiting admin review" },
-      });
-    } else {
-      const lastPunch = attendance.punches[attendance.punches.length - 1];
-      if (lastPunch && lastPunch.type === "in") throw new ApiError(400, "Employee is already clocked in. Please clock out first.");
-      attendance.punches.push(newPunch);
-      attendance.completionStatus = "incomplete";
-      attendance.validation = { status: "pending", remarks: "Manually clocked in by manager — awaiting admin review" };
-      await attendance.save();
-    }
-  } else {
-    if (!attendance || attendance.punches.length === 0) throw new ApiError(404, "No clock-in found for this employee today");
-    const lastPunch = attendance.punches[attendance.punches.length - 1];
-    if (lastPunch.type === "out") throw new ApiError(400, "Employee is already clocked out. Please clock in first.");
-
-    attendance.punches.push(newPunch);
-
-    const employeeWithShift = await User.findById(employeeId).populate("shiftId");
-    const assignedShift = employeeWithShift?.shiftId;
-    let departureStatus = "regular";
-    const endTime = assignedShift ? assignedShift.endTime : (settings?.workEndTime || "18:00");
-
-    if (endTime) {
-      const [endHour, endMinute] = endTime.split(":").map(Number);
-      const shiftEnd = new Date(now);
-      shiftEnd.setHours(endHour, endMinute, 0, 0);
-      if (now < shiftEnd) departureStatus = "early-departure";
-    }
-
-    attendance.departureStatus = departureStatus;
-    const workingHours = calculateWorkingHours(attendance.punches);
-    attendance.workingHours = workingHours;
-    attendance.completionStatus = workingHours >= 8 ? "completed" : "incomplete";
-    attendance.validation = { status: "pending", remarks: "Manually clocked out by manager — awaiting admin review" };
-    await attendance.save();
-  }
-
-  return attendance;
-};
-
 export const getAllAttendanceService = async (page = 1, limit = 10) => {
   const skip = (page - 1) * limit;
   const [attendances, total] = await Promise.all([
@@ -296,4 +182,70 @@ export const getAllAttendanceService = async (page = 1, limit = 10) => {
     }),
     pagination: { total, page, limit, totalPages: Math.ceil(total / limit) },
   };
+};
+
+export const startBreakService = async (userId, breakType) => {
+  const { start, end } = getTodayRange();
+
+  const attendance = await Attendance.findOne({ employeeId: userId, date: { $gte: start, $lte: end } });
+  if (!attendance || attendance.punches.length === 0) {
+    throw new ApiError(404, "No clock-in found for today. You must clock in before taking a break.");
+  }
+
+  const lastPunch = attendance.punches[attendance.punches.length - 1];
+  if (lastPunch.type === "out") {
+    throw new ApiError(400, "You are already clocked out for today.");
+  }
+
+  // Check if there is an active break already
+  const activeBreak = attendance.breaks.find(b => !b.endTime);
+  if (activeBreak) {
+    throw new ApiError(400, `You are already on a ${activeBreak.type} break.`);
+  }
+
+  // Get user's shift break policy
+  const user = await User.findById(userId).populate("shiftId");
+  const breakPolicy = getUserBreakPolicy(user);
+
+  // Validate policy
+  if (breakType === "lunch" && !breakPolicy.lunch?.enabled) {
+    throw new ApiError(400, "Lunch break is not allowed for your shift.");
+  }
+  if (breakType === "dinner" && !breakPolicy.dinner?.enabled) {
+    throw new ApiError(400, "Dinner break is not allowed for your shift.");
+  }
+  if (breakType === "tea") {
+    const maxTeaCount = breakPolicy.tea?.maxCount ?? 2;
+    const takenTeaCount = attendance.breaks.filter(b => b.type === "tea").length;
+    if (takenTeaCount >= maxTeaCount) {
+      throw new ApiError(400, `You have reached the maximum allowed tea breaks (${maxTeaCount}) for your shift.`);
+    }
+  }
+
+  // Add the break
+  attendance.breaks.push({
+    type: breakType,
+    startTime: new Date()
+  });
+
+  await attendance.save();
+  return attendance;
+};
+
+export const endBreakService = async (userId) => {
+  const { start, end } = getTodayRange();
+
+  const attendance = await Attendance.findOne({ employeeId: userId, date: { $gte: start, $lte: end } });
+  if (!attendance || attendance.punches.length === 0) {
+    throw new ApiError(404, "No attendance record found for today.");
+  }
+
+  const activeBreak = attendance.breaks.find(b => !b.endTime);
+  if (!activeBreak) {
+    throw new ApiError(400, "No active break found to end.");
+  }
+
+  activeBreak.endTime = new Date();
+  await attendance.save();
+  return attendance;
 };

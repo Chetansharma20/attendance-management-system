@@ -3,9 +3,10 @@ import {
   getAttendanceByEmployeeIdService,
   getMyAttendanceService,
   getTeamAttendanceService,
-  managerPunchService,
   punchInService,
   punchOutService,
+  startBreakService,
+  endBreakService,
 } from "./attendance.service.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
@@ -44,11 +45,16 @@ export const getAllAttendance = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, data, "All attendance records fetched successfully"));
 });
 
-export const managerPunch = asyncHandler(async (req, res) => {
-  const { employeeId, type } = req.body;
-  if (!employeeId || !type || !['in', 'out'].includes(type)) {
-    throw new Error("employeeId and type ('in' or 'out') are required");
+export const startBreak = asyncHandler(async (req, res) => {
+  const { type } = req.body;
+  if (!type || !['tea', 'lunch', 'dinner'].includes(type)) {
+    throw new Error("Break type ('tea', 'lunch', or 'dinner') is required");
   }
-  const attendance = await managerPunchService(req.user._id, req.user.role, employeeId, type);
-  res.status(200).json(new ApiResponse(200, attendance, `Employee clocked ${type} successfully by manager`));
+  const attendance = await startBreakService(req.user._id, type);
+  res.status(200).json(new ApiResponse(200, attendance, `${type} break started successfully`));
+});
+
+export const endBreak = asyncHandler(async (req, res) => {
+  const attendance = await endBreakService(req.user._id);
+  res.status(200).json(new ApiResponse(200, attendance, "Break ended successfully"));
 });

@@ -3,6 +3,7 @@ import LeaveBalance from "../../models/leaveBalance.js";
 import LeavePolicy from "../../models/leavePolicy.js";
 import User from "../../models/users.js";
 import { ApiError } from "../../utils/ApiError.js";
+import { createNotificationService, notifyAdminsService } from "../notification/notification.service.js";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -146,6 +147,24 @@ export const applyLeaveService = async (employeeId, { leaveType, startDate, endD
     reason,
   });
 
+  const employee = await User.findById(employeeId);
+  if (employee && employee.managerId) {
+    await createNotificationService({
+      recipientId: employee.managerId,
+      title: "New Leave Request",
+      message: `${employee.name} has applied for ${totalDays} day(s) of ${leaveType} leave.`,
+      type: "leave_request",
+      referenceId: leave._id,
+    });
+  }
+
+  await notifyAdminsService({
+    title: "New Leave Request",
+    message: `${employee ? employee.name : "An employee"} has applied for ${totalDays} day(s) of ${leaveType} leave.`,
+    type: "leave_request",
+    referenceId: leave._id,
+  });
+
   return leave;
 };
 
@@ -270,6 +289,14 @@ export const updateLeaveStatusService = async (leaveId, actorId, actorRole, stat
   leave.approvedBy = actorId;
   leave.approvedAt = new Date();
   await leave.save();
+
+  await createNotificationService({
+    recipientId: leave.employeeId._id,
+    title: `Leave Request ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+    message: `Your request for ${leave.totalDays} day(s) of ${leave.leaveType} leave has been ${status}.`,
+    type: "leave_status",
+    referenceId: leave._id,
+  });
 
   return await Leave.findById(leaveId).populate("employeeId", "name email").populate("approvedBy", "name role");
 };

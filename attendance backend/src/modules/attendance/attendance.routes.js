@@ -5,9 +5,10 @@ import {
   getAttendanceByEmployeeId,
   getMyAttendance,
   getTeamAttendance,
-  managerPunch,
   punchIn,
   punchOut,
+  startBreak,
+  endBreak,
 } from './attendance.controller.js';
 
 const router = express.Router();
@@ -18,6 +19,7 @@ router.get('/my-attendance', verifyJWT, getMyAttendance);
 router.get('/getattendancebyid/:employeeId', verifyJWT, getAttendanceByEmployeeId);
 router.get('/team-attendance', verifyJWT, allowedRoles(['admin', 'manager']), getTeamAttendance);
 router.get('/all-attendance', verifyJWT, allowedRoles(['admin', 'manager']), getAllAttendance);
-router.post('/manager-punch', verifyJWT, allowedRoles(['admin', 'manager']), managerPunch);
+router.post('/break/start', verifyJWT, startBreak);
+router.post('/break/end', verifyJWT, endBreak);
 
 export default router;

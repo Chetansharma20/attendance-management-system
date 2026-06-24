@@ -81,6 +81,25 @@ export const attendanceApi = createApi({
       invalidatesTags: ['Attendance'],
     }),
 
+    // POST /api/v1/attendance/break/start
+    startBreak: builder.mutation({
+      query: (body) => ({
+        url: '/attendance/break/start',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Attendance'],
+    }),
+
+    // POST /api/v1/attendance/break/end
+    endBreak: builder.mutation({
+      query: () => ({
+        url: '/attendance/break/end',
+        method: 'POST',
+      }),
+      invalidatesTags: ['Attendance'],
+    }),
+
   }),
 });
 
@@ -94,4 +113,6 @@ export const {
   useValidateAttendanceMutation,
   useDownloadDailyReportMutation,
   useManagerPunchMutation,
+  useStartBreakMutation,
+  useEndBreakMutation,
 } = attendanceApi;

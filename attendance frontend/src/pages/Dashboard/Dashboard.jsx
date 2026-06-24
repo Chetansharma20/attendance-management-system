@@ -1,6 +1,6 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useLogoutMutation } from '../../redux/api/authApi.js';
 import UsersList from '../../components/admin/Users.jsx';
 import AttendanceLogs from '../../components/admin/AttendanceLogs.jsx';
@@ -14,6 +14,7 @@ import ShiftManagement from '../../components/admin/ShiftManagement.jsx';
 import LeaveManagement from '../../components/admin/LeaveManagement.jsx';
 import TeamLeaves from '../../components/manager/TeamLeaves.jsx';
 import MyLeaves from '../../components/employee/MyLeaves.jsx';
+import NotificationBell from '../../components/NotificationBell.jsx';
 import { LogOut, Clock, Sun, Moon } from 'lucide-react';
 import { ThemeContext } from '../../context/ThemeContext.jsx';
 
@@ -40,6 +41,7 @@ function TabBar({ tabs, active, onChange }) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useSelector((state) => state.auth);
   const [logout, { isLoading: isLoggingOut }] = useLogoutMutation();
   const { theme, toggleTheme } = useContext(ThemeContext);
@@ -50,6 +52,24 @@ export default function Dashboard() {
 
   const isAdmin = user?.role === 'admin';
   const isManager = user?.role === 'manager';
+
+  const queryTab = searchParams.get('tab');
+
+  useEffect(() => {
+    if (queryTab) {
+      if (isAdmin) setAdminTab(queryTab);
+      else if (isManager) setManagerTab(queryTab);
+      else setEmployeeTab(queryTab);
+    }
+  }, [queryTab, isAdmin, isManager]);
+
+  const handleTabChange = (tabId) => {
+    if (isAdmin) setAdminTab(tabId);
+    else if (isManager) setManagerTab(tabId);
+    else setEmployeeTab(tabId);
+
+    setSearchParams({ tab: tabId });
+  };
 
   const handleLogout = async () => {
     try {
@@ -74,10 +94,13 @@ export default function Dashboard() {
   ];
 
   const managerTabs = [
-    { id: 'team',       label: 'My Team' },
-    { id: 'attendance', label: 'Team Attendance' },
-    { id: 'overtime',   label: 'Overtime Requests' },
-    { id: 'leaves',     label: 'Team Leaves' },
+    { id: 'team',          label: 'My Team' },
+    { id: 'attendance',    label: 'Team Attendance' },
+    { id: 'overtime',      label: 'Team Overtime' },
+    { id: 'leaves',        label: 'Team Leaves' },
+    { id: 'my-attendance', label: 'My Attendance' },
+    { id: 'my-overtime',   label: 'My Overtime' },
+    { id: 'my-leaves',     label: 'My Leaves' },
   ];
 
   const employeeTabs = [
@@ -117,6 +140,8 @@ export default function Dashboard() {
                 {user.email} • <span className="text-violet-600 dark:text-violet-400 font-medium capitalize">{user.role}</span>
               </p>
             </div>
+
+            <NotificationBell />
             
             <button
               onClick={toggleTheme}
@@ -154,7 +179,7 @@ export default function Dashboard() {
                 Manage users, view all attendance records, and handle overtime requests.
               </p>
             </div>
-            <TabBar tabs={adminTabs} active={adminTab} onChange={setAdminTab} />
+            <TabBar tabs={adminTabs} active={adminTab} onChange={handleTabChange} />
           </div>
 
           {/* Admin Tab Content */}
@@ -178,7 +203,7 @@ export default function Dashboard() {
                 View your team's attendance, manage members, and handle overtime requests.
               </p>
             </div>
-            <TabBar tabs={managerTabs} active={managerTab} onChange={setManagerTab} />
+            <TabBar tabs={managerTabs} active={managerTab} onChange={handleTabChange} />
           </div>
 
           {/* Manager Tab Content */}
@@ -186,6 +211,9 @@ export default function Dashboard() {
           {managerTab === 'attendance' && <TeamAttendance />}
           {managerTab === 'overtime' && <PendingOvertime />}
           {managerTab === 'leaves' && <TeamLeaves />}
+          {managerTab === 'my-attendance' && <MyAttendance />}
+          {managerTab === 'my-overtime' && <MyOvertimeRequests />}
+          {managerTab === 'my-leaves' && <MyLeaves />}
         </main>
 
       ) : (
@@ -201,7 +229,7 @@ export default function Dashboard() {
                 Track your attendance, working hours, and manage overtime requests.
               </p>
             </div>
-            <TabBar tabs={employeeTabs} active={employeeTab} onChange={setEmployeeTab} />
+            <TabBar tabs={employeeTabs} active={employeeTab} onChange={handleTabChange} />
           </div>
 
           {/* Employee Tab Content */}

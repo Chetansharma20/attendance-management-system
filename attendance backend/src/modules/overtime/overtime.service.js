@@ -2,6 +2,7 @@ import Attendance from "../../models/attendance.js";
 import Overtime from "../../models/overtime.js";
 import User from "../../models/users.js";
 import { ApiError } from "../../utils/ApiError.js";
+import { createNotificationService, notifyAdminsService } from "../notification/notification.service.js";
 
 export const requestOvertimeService = async (employeeId, attendanceId, requestedHours, reason) => {
   const attendance = await Attendance.findById(attendanceId);
@@ -15,7 +16,31 @@ export const requestOvertimeService = async (employeeId, attendanceId, requested
   const existingRequest = await Overtime.findOne({ attendanceId });
   if (existingRequest) throw new ApiError(400, "Overtime request already exists for this attendance");
 
-  return await Overtime.create({ employeeId, attendanceId, requestedHours, reason });
+  const request = await Overtime.create({ employeeId, attendanceId, requestedHours, reason });
+
+  // Get employee details for the notification message
+  const employee = await User.findById(employeeId);
+
+  // Send notification to manager if assigned
+  if (employee && employee.managerId) {
+    await createNotificationService({
+      recipientId: employee.managerId,
+      title: "New Overtime Request",
+      message: `${employee.name} has requested ${requestedHours} hours of overtime.`,
+      type: "overtime_request",
+      referenceId: request._id,
+    });
+  }
+
+  // Notify admins
+  await notifyAdminsService({
+    title: "New Overtime Request",
+    message: `${employee ? employee.name : "An employee"} has requested ${requestedHours} hours of overtime.`,
+    type: "overtime_request",
+    referenceId: request._id,
+  });
+
+  return request;
 };
 
 export const getPendingOvertimeService = async (userId, userRole) => {
@@ -50,6 +75,16 @@ export const updateOvertimeStatusService = async (requestId, userId, userRole, s
   }
 
   await request.save();
+
+  // Notify the employee about the approval/rejection status
+  await createNotificationService({
+    recipientId: request.employeeId._id,
+    title: `Overtime Request ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+    message: `Your overtime request for ${request.requestedHours} hours has been ${status}.`,
+    type: "overtime_status",
+    referenceId: request._id,
+  });
+
   return request;
 };
 
