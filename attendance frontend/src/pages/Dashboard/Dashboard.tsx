@@ -17,38 +17,29 @@ import TeamLeaves from '../../components/manager/TeamLeaves';
 import MyLeaves from '../../components/employee/MyLeaves';
 import NotificationBell from '../../components/NotificationBell.jsx';
 import AnalyticsDashboard from '../../components/analytics/AnalyticsDashboard.jsx';
-import { LogOut, Clock, Sun, Moon } from 'lucide-react';
+import { 
+  LogOut, 
+  Clock, 
+  Sun, 
+  Moon, 
+  Menu, 
+  X, 
+  Users, 
+  Folder, 
+  Calendar, 
+  ClipboardList, 
+  Hourglass, 
+  FileSpreadsheet, 
+  BarChart3, 
+  Settings, 
+  FileText
+} from 'lucide-react';
 import { ThemeContext } from '../../context/ThemeContext.jsx';
 
 interface Tab {
   id: string;
   label: string;
-}
-
-interface TabBarProps {
-  tabs: Tab[];
-  active: string;
-  onChange: (tabId: string) => void;
-}
-
-// Reusable Tab Bar component
-function TabBar({ tabs, active, onChange }: TabBarProps) {
-  return (
-    <div className="flex flex-nowrap overflow-x-auto gap-1 bg-theme-card border border-theme-border p-1 rounded-xl max-w-full [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden shrink-0 self-start sm:self-auto transition-colors duration-200">
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          onClick={() => onChange(tab.id)}
-          className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap ${active === tab.id
-              ? 'bg-violet-600 text-white shadow-md'
-              : 'text-theme-muted hover:text-theme-bright'
-            }`}
-        >
-          {tab.label}
-        </button>
-      ))}
-    </div>
-  );
+  icon: React.ComponentType<any>;
 }
 
 export default function Dashboard() {
@@ -63,9 +54,10 @@ export default function Dashboard() {
   }
   const { theme, toggleTheme } = themeContext;
 
-  const [adminTab, setAdminTab] = useState('users');
+  const [adminTab, setAdminTab] = useState('dashboard');
   const [managerTab, setManagerTab] = useState('team');
   const [employeeTab, setEmployeeTab] = useState('attendance');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const isAdmin = user?.role === 'admin';
   const isManager = user?.role === 'manager';
@@ -86,6 +78,7 @@ export default function Dashboard() {
     else setEmployeeTab(tabId);
 
     setSearchParams({ tab: tabId });
+    setIsSidebarOpen(false);
   };
 
   const handleLogout = async () => {
@@ -101,173 +94,234 @@ export default function Dashboard() {
     return null;
   }
 
-  const adminTabs = [
-    { id: 'users', label: 'Manage Employees' },
-    { id: 'departments', label: 'Departments' },
-    { id: 'shifts', label: 'Manage Shifts' },
-    { id: 'attendance', label: 'Attendance Records' },
-    { id: 'overtime', label: 'Overtime Requests' },
-    { id: 'leave', label: 'Leave Management' },
-    { id: 'analytics', label: 'Analytics & Reports' },
-    { id: 'settings', label: 'Geofence Settings' },
+  const adminTabs: Tab[] = [
+    { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
+    { id: 'users', label: 'Manage Employees', icon: Users },
+    { id: 'departments', label: 'Departments', icon: Folder },
+    { id: 'shifts', label: 'Manage Shifts', icon: Calendar },
+    { id: 'attendance', label: 'Attendance Records', icon: ClipboardList },
+    { id: 'overtime', label: 'Overtime Requests', icon: Hourglass },
+    { id: 'leave', label: 'Leave Management', icon: FileSpreadsheet },
+    { id: 'settings', label: 'Geofence Settings', icon: Settings },
   ];
 
-  const managerTabs = [
-    { id: 'team', label: 'My Team' },
-    { id: 'attendance', label: 'Team Attendance' },
-    { id: 'overtime', label: 'Team Overtime' },
-    { id: 'leaves', label: 'Team Leaves' },
-    { id: 'analytics', label: 'Analytics & Reports' },
-    { id: 'my-attendance', label: 'My Attendance' },
-    { id: 'my-overtime', label: 'My Overtime' },
-    { id: 'my-leaves', label: 'My Leaves' },
+  const managerTabs: Tab[] = [
+    { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
+    { id: 'team', label: 'My Team', icon: Users },
+    { id: 'attendance', label: 'Team Attendance', icon: ClipboardList },
+    { id: 'overtime', label: 'Team Overtime', icon: Hourglass },
+    { id: 'leaves', label: 'Team Leaves', icon: FileSpreadsheet },
+    { id: 'my-attendance', label: 'My Attendance', icon: Calendar },
+    { id: 'my-overtime', label: 'My Overtime', icon: Clock },
+    { id: 'my-leaves', label: 'My Leaves', icon: FileText },
   ];
 
-  const employeeTabs = [
-    { id: 'attendance', label: 'Punch & Attendance' },
-    { id: 'overtime', label: 'Overtime Requests' },
-    { id: 'leaves', label: 'My Leaves' },
-    { id: 'analytics', label: 'Analytics & Reports' },
+  const employeeTabs: Tab[] = [
+    { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
+    { id: 'attendance', label: 'Punch & Attendance', icon: Calendar },
+    { id: 'overtime', label: 'Overtime Requests', icon: Clock },
+    { id: 'leaves', label: 'My Leaves', icon: FileText },
   ];
+
+  const tabs = isAdmin ? adminTabs : isManager ? managerTabs : employeeTabs;
+  const activeTab = isAdmin ? adminTab : isManager ? managerTab : employeeTab;
+
+  const renderSidebarContent = () => (
+    <div className="flex flex-col h-full">
+      {/* Brand Logo & Name */}
+      <div className="flex items-center gap-3 px-6 py-5 border-b border-theme-border">
+        <div className="w-9 h-9 bg-violet-600/10 dark:bg-violet-600/20 border border-violet-500/20 dark:border-violet-500/30 rounded-xl flex items-center justify-center shrink-0">
+          <Clock className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+        </div>
+        <div className="min-w-0">
+          <h1 className="text-lg font-bold tracking-tight text-theme-bright truncate">Attendance</h1>
+          <p className="text-2xs text-theme-muted truncate">
+            {isAdmin ? 'Admin Control Center' : isManager ? 'Manager Dashboard' : 'Employee Portal'}
+          </p>
+        </div>
+      </div>
+
+      {/* Navigation Links */}
+      <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => handleTabChange(tab.id)}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+                isActive
+                  ? 'bg-violet-600 text-white shadow-md shadow-violet-600/10'
+                  : 'text-theme-muted hover:text-theme-bright hover:bg-theme-card-hover'
+              }`}
+            >
+              <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-white' : 'text-theme-muted group-hover:text-theme-bright'}`} />
+              <span className="truncate">{tab.label}</span>
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* Footer Profile & Controls */}
+      <div className="p-4 border-t border-theme-border bg-theme-bg/50">
+        <div className="flex items-center gap-3 px-2 py-3 mb-4">
+          <div className="w-10 h-10 rounded-full bg-violet-600/10 border border-violet-500/20 flex items-center justify-center text-violet-600 dark:text-violet-400 font-bold shrink-0">
+            {user.name.charAt(0).toUpperCase()}
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-theme-bright truncate">{user.name}</p>
+            <p className="text-xs text-theme-muted truncate capitalize">{user.role}</p>
+          </div>
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            onClick={toggleTheme}
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-theme-card hover:bg-theme-card-hover border border-theme-border text-theme-muted hover:text-theme-bright transition-colors cursor-pointer"
+            title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+          >
+            {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+            <span className="text-xs font-semibold">Theme</span>
+          </button>
+
+          <button
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className="flex-1 flex items-center justify-center gap-2 bg-theme-card hover:bg-theme-card-hover text-theme-text hover:text-theme-bright py-2.5 rounded-xl text-xs font-semibold transition-colors border border-theme-border cursor-pointer"
+            title="Logout"
+          >
+            <LogOut className="w-4 h-4 text-red-500" />
+            <span>Logout</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-theme-bg text-theme-text flex flex-col font-sans transition-colors duration-200">
-
+    <div className="min-h-screen bg-theme-bg text-theme-text flex font-sans transition-colors duration-200 relative overflow-hidden">
       {/* Dynamic Background Auroras */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute -top-40 -left-40 w-[600px] h-[600px] bg-violet-600/5 dark:bg-violet-600/10 rounded-full blur-[140px]" />
         <div className="absolute -bottom-40 -right-40 w-[600px] h-[600px] bg-indigo-600/5 dark:bg-indigo-600/10 rounded-full blur-[140px]" />
       </div>
 
-      {/* Top Navbar */}
-      <header className="border-b border-theme-border bg-theme-header backdrop-blur-md sticky top-0 z-20 px-4 sm:px-6 py-3 sm:py-4 transition-colors duration-200">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-violet-600/10 dark:bg-violet-600/20 border border-violet-500/20 dark:border-violet-500/30 rounded-xl flex items-center justify-center">
-              <Clock className="w-5 h-5 text-violet-600 dark:text-violet-400" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight text-theme-bright">Attendance Portal</h1>
-              <p className="text-xs text-theme-muted">
-                {isAdmin ? 'Admin Control Center' : isManager ? 'Manager Dashboard' : 'Employee Portal'}
-              </p>
-            </div>
-          </div>
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:block w-64 h-screen sticky top-0 border-r border-theme-border bg-theme-card z-20 shrink-0">
+        {renderSidebarContent()}
+      </aside>
 
-          <div className="flex items-center gap-4">
-            <div className="text-right hidden sm:block">
-              <p className="text-sm font-semibold text-theme-bright">{user.name}</p>
-              <p className="text-xs text-theme-muted">
-                {user.email} • <span className="text-violet-600 dark:text-violet-400 font-medium capitalize">{user.role}</span>
-              </p>
-            </div>
-
-            <NotificationBell />
-
-            <button
-              onClick={toggleTheme}
-              className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-theme-card hover:bg-theme-card-hover border border-theme-border text-theme-muted hover:text-theme-bright transition-colors cursor-pointer"
-              title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+      {/* Mobile Sidebar Drawer */}
+      {isSidebarOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden flex">
+          {/* Overlay */}
+          <div 
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+          {/* Drawer content */}
+          <aside className="relative flex flex-col w-64 max-w-xs h-full bg-theme-card border-r border-theme-border shadow-2xl animate-in slide-in-from-left duration-200">
+            <button 
+              onClick={() => setIsSidebarOpen(false)}
+              className="absolute top-4 right-4 p-2 rounded-xl bg-theme-card border border-theme-border text-theme-muted hover:text-theme-bright cursor-pointer"
             >
-              {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-              <span className="text-xs font-semibold capitalize hidden md:inline">
-                {theme === 'light' ? 'Dark' : 'Light'} Mode
-              </span>
+              <X className="w-4 h-4" />
             </button>
-
-            <button
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-              className="flex items-center gap-2 bg-theme-card hover:bg-theme-card-hover text-theme-text hover:text-theme-bright px-4 py-2.5 rounded-xl text-sm font-medium transition-colors border border-theme-border cursor-pointer"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Logout</span>
-            </button>
-          </div>
+            {renderSidebarContent()}
+          </aside>
         </div>
-      </header>
-
-      {/* Main Content Area based on User Role */}
-      {isAdmin ? (
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8 z-10">
-          {/* Admin Header + Tabs */}
-          <div className="border-b border-theme-border pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight text-theme-bright">
-                Admin Control Center
-              </h2>
-              <p className="text-sm text-theme-muted mt-1">
-                Manage users, view all attendance records, and handle overtime requests.
-              </p>
-            </div>
-            <TabBar tabs={adminTabs} active={adminTab} onChange={handleTabChange} />
-          </div>
-
-          {/* Admin Tab Content */}
-          {adminTab === 'users' && <UsersList />}
-          {adminTab === 'departments' && <DepartmentManagement />}
-          {adminTab === 'shifts' && <ShiftManagement />}
-          {adminTab === 'attendance' && <AttendanceLogs />}
-          {adminTab === 'overtime' && <PendingOvertime />}
-          {adminTab === 'leave' && <LeaveManagement />}
-          {adminTab === 'analytics' && <AnalyticsDashboard />}
-          {adminTab === 'settings' && <AdminSettings />}
-        </main>
-
-      ) : isManager ? (
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8 z-10">
-          {/* Manager Header + Tabs */}
-          <div className="border-b border-theme-border pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight text-theme-bright">
-                Manager Dashboard
-              </h2>
-              <p className="text-sm text-theme-muted mt-1">
-                View your team's attendance, manage members, and handle overtime requests.
-              </p>
-            </div>
-            <TabBar tabs={managerTabs} active={managerTab} onChange={handleTabChange} />
-          </div>
-
-          {/* Manager Tab Content */}
-          {managerTab === 'team' && <MyTeam />}
-          {managerTab === 'attendance' && <TeamAttendance />}
-          {managerTab === 'overtime' && <PendingOvertime />}
-          {managerTab === 'leaves' && <TeamLeaves />}
-          {managerTab === 'analytics' && <AnalyticsDashboard />}
-          {managerTab === 'my-attendance' && <MyAttendance />}
-          {managerTab === 'my-overtime' && <MyOvertimeRequests />}
-          {managerTab === 'my-leaves' && <MyLeaves />}
-        </main>
-
-      ) : (
-        /* Employee Dashboard */
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8 z-10">
-          {/* Employee Header + Tabs */}
-          <div className="border-b border-theme-border pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight text-theme-bright">
-                Welcome back, <span className="bg-gradient-to-r from-violet-600 to-sky-600 dark:from-violet-400 dark:to-sky-400 bg-clip-text text-transparent">{user.name}</span> 👋
-              </h2>
-              <p className="text-sm text-theme-muted mt-1">
-                Track your attendance, working hours, and manage overtime requests.
-              </p>
-            </div>
-            <TabBar tabs={employeeTabs} active={employeeTab} onChange={handleTabChange} />
-          </div>
-
-          {/* Employee Tab Content */}
-          {employeeTab === 'attendance' && <MyAttendance />}
-          {employeeTab === 'overtime' && <MyOvertimeRequests />}
-          {employeeTab === 'leaves' && <MyLeaves />}
-          {employeeTab === 'analytics' && <AnalyticsDashboard />}
-        </main>
       )}
 
-      {/* Footer */}
-      <footer className="border-t border-theme-border bg-theme-card/10 px-6 py-6 text-center text-xs text-theme-muted z-10 transition-colors duration-200">
-        &copy; {new Date().getFullYear()} Attendance Management System. All rights reserved.
-      </footer>
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0 z-10 h-screen overflow-y-auto">
+        {/* Top Header Navbar */}
+        <header className="border-b border-theme-border bg-theme-header backdrop-blur-md sticky top-0 z-20 px-4 sm:px-6 py-4 transition-colors duration-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setIsSidebarOpen(true)}
+                className="lg:hidden p-2 rounded-xl bg-theme-card border border-theme-border text-theme-muted hover:text-theme-bright transition-colors cursor-pointer"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+              <div className="w-10 h-10 bg-violet-600/10 dark:bg-violet-600/20 border border-violet-500/20 dark:border-violet-500/30 rounded-xl flex items-center justify-center lg:hidden">
+                <Clock className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold tracking-tight text-theme-bright">
+                  {activeTab === 'dashboard' && 'Dashboard'}
+                  {activeTab === 'users' && 'Manage Employees'}
+                  {activeTab === 'departments' && 'Departments'}
+                  {activeTab === 'shifts' && 'Manage Shifts'}
+                  {activeTab === 'attendance' && (isAdmin ? 'Attendance Records' : 'Team Attendance')}
+                  {activeTab === 'overtime' && (isAdmin ? 'Overtime Requests' : 'Team Overtime')}
+                  {activeTab === 'leave' && 'Leave Management'}
+                  {activeTab === 'leaves' && 'Team Leaves'}
+                  {activeTab === 'settings' && 'Geofence Settings'}
+                  {activeTab === 'team' && 'My Team'}
+                  {activeTab === 'my-attendance' && 'My Attendance'}
+                  {activeTab === 'my-overtime' && 'My Overtime Requests'}
+                  {activeTab === 'my-leaves' && 'My Leaves'}
+                </h1>
+                <p className="text-xs text-theme-muted hidden sm:block">
+                  {isAdmin ? 'Admin Control Center' : isManager ? 'Manager Dashboard' : 'Employee Portal'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <div className="text-right hidden sm:block">
+                <p className="text-sm font-semibold text-theme-bright">{user.name}</p>
+                <p className="text-xs text-theme-muted">
+                  {user.email} • <span className="text-violet-600 dark:text-violet-400 font-medium capitalize">{user.role}</span>
+                </p>
+              </div>
+
+              <NotificationBell />
+            </div>
+          </div>
+        </header>
+
+        {/* Tab Content */}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-8 max-w-7xl w-full mx-auto">
+          {isAdmin ? (
+            <>
+              {adminTab === 'dashboard' && <AnalyticsDashboard />}
+              {adminTab === 'users' && <UsersList />}
+              {adminTab === 'departments' && <DepartmentManagement />}
+              {adminTab === 'shifts' && <ShiftManagement />}
+              {adminTab === 'attendance' && <AttendanceLogs />}
+              {adminTab === 'overtime' && <PendingOvertime />}
+              {adminTab === 'leave' && <LeaveManagement />}
+              {adminTab === 'settings' && <AdminSettings />}
+            </>
+          ) : isManager ? (
+            <>
+              {managerTab === 'dashboard' && <AnalyticsDashboard />}
+              {managerTab === 'team' && <MyTeam />}
+              {managerTab === 'attendance' && <TeamAttendance />}
+              {managerTab === 'overtime' && <PendingOvertime />}
+              {managerTab === 'leaves' && <TeamLeaves />}
+              {managerTab === 'my-attendance' && <MyAttendance />}
+              {managerTab === 'my-overtime' && <MyOvertimeRequests />}
+              {managerTab === 'my-leaves' && <MyLeaves />}
+            </>
+          ) : (
+            <>
+              {employeeTab === 'dashboard' && <AnalyticsDashboard />}
+              {employeeTab === 'attendance' && <MyAttendance />}
+              {employeeTab === 'overtime' && <MyOvertimeRequests />}
+              {employeeTab === 'leaves' && <MyLeaves />}
+            </>
+          )}
+        </main>
+
+        {/* Footer */}
+        <footer className="border-t border-theme-border bg-theme-card/10 px-6 py-6 text-center text-xs text-theme-muted transition-colors duration-200">
+          &copy; {new Date().getFullYear()} Attendance Management System. All rights reserved.
+        </footer>
+      </div>
     </div>
   );
 }

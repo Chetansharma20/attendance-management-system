@@ -26,6 +26,28 @@ export interface TodayStatsResponse {
     present: number;
     onLeave: number;
     absent: number;
+    late?: number;
+    presentEmployees?: Array<{
+      _id: string;
+      name: string;
+      email: string;
+      punchInTime: string | null;
+      punchOutTime: string | null;
+      arrivalStatus: string;
+    }>;
+    onLeaveEmployees?: Array<{
+      _id: string;
+      name: string;
+      email: string;
+      leaveType: string;
+      startDate: string | Date;
+      endDate: string | Date;
+    }>;
+    absentEmployees?: Array<{
+      _id: string;
+      name: string;
+      email: string;
+    }>;
   };
   message: string;
 }
@@ -54,16 +76,36 @@ export interface MonthlyReportItem {
     _id: string;
     name: string;
     email: string;
+    role?: string;
+    departmentId?: string | null;
   };
   attendance: {
     daysPresent: number;
     totalWorkedHours: number;
+    averageDailyHours?: number;
+    lateArrivals?: number;
+    earlyDepartures?: number;
+    totalBreakMinutes?: number;
   };
   leaves: {
     approvedDays: number;
+    pendingRequests?: number;
+    rawList?: Array<{
+      type: string;
+      startDate: string | Date;
+      endDate: string | Date;
+      status: string;
+      totalDays: number;
+    }>;
   };
   overtime: {
     approvedHours: number;
+    pendingRequests?: number;
+    rawList?: Array<{
+      requestedHours: number;
+      status: string;
+      reason: string;
+    }>;
   };
 }
 

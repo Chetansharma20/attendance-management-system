@@ -232,15 +232,45 @@ export const getTodayStatsService = async (userId: string, role: string, dateStr
   const leaveLogs = await findApprovedLeavesForEmployeesInDateRange(userIds, start, end);
   const leaveCount = leaveLogs.length;
 
-  // Absent today: Users who are neither present nor on leave
+  // Late Arrivals today: Present logs with late arrivalStatus
+  const lateCount = presentLogs.filter(log => log.arrivalStatus === "late").length;
+
   const presentUserIds = new Set(presentLogs.map(log => log.employeeId.toString()));
   const leaveUserIds = new Set(leaveLogs.map(log => log.employeeId.toString()));
 
-  let absentCount = 0;
+  const presentEmployees = presentLogs.map(log => {
+    const u = users.find(user => user._id.toString() === log.employeeId.toString());
+    return {
+      _id: log.employeeId,
+      name: u?.name || "Unknown",
+      email: u?.email || "",
+      punchInTime: log.punchIn?.time || null,
+      punchOutTime: log.punchOut?.time || null,
+      arrivalStatus: log.arrivalStatus || "on-time",
+    };
+  });
+
+  const onLeaveEmployees = leaveLogs.map(log => {
+    const u = users.find(user => user._id.toString() === log.employeeId.toString());
+    return {
+      _id: log.employeeId,
+      name: u?.name || "Unknown",
+      email: u?.email || "",
+      leaveType: log.leaveType || "General",
+      startDate: log.startDate,
+      endDate: log.endDate,
+    };
+  });
+
+  const absentEmployees: any[] = [];
   users.forEach(u => {
     const idStr = u._id.toString();
     if (!presentUserIds.has(idStr) && !leaveUserIds.has(idStr)) {
-      absentCount++;
+      absentEmployees.push({
+        _id: u._id,
+        name: u.name,
+        email: u.email,
+      });
     }
   });
 
@@ -248,7 +278,11 @@ export const getTodayStatsService = async (userId: string, role: string, dateStr
     total: users.length,
     present: presentCount,
     onLeave: leaveCount,
-    absent: absentCount
+    absent: absentEmployees.length,
+    late: lateCount,
+    presentEmployees,
+    onLeaveEmployees,
+    absentEmployees
   };
 };
 
