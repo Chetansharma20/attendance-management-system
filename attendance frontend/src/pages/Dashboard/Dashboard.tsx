@@ -13,10 +13,13 @@ import AdminSettings from '../../components/admin/AdminSettings';
 import ShiftManagement from '../../components/admin/ShiftManagement';
 import LeaveManagement from '../../components/admin/LeaveManagement';
 import DepartmentManagement from '../../components/admin/DepartmentManagement';
+import HolidayManagement from '../../components/admin/HolidayManagement';
 import TeamLeaves from '../../components/manager/TeamLeaves';
 import MyLeaves from '../../components/employee/MyLeaves';
 import NotificationBell from '../../components/NotificationBell.jsx';
 import AnalyticsDashboard from '../../components/analytics/AnalyticsDashboard.jsx';
+import AiChatAssistant from '../../components/common/AiChatAssistant';
+
 import { 
   LogOut, 
   Clock, 
@@ -102,6 +105,7 @@ export default function Dashboard() {
     { id: 'attendance', label: 'Attendance Records', icon: ClipboardList },
     { id: 'overtime', label: 'Overtime Requests', icon: Hourglass },
     { id: 'leave', label: 'Leave Management', icon: FileSpreadsheet },
+    { id: 'holidays', label: 'Holidays', icon: Calendar },
     { id: 'settings', label: 'Geofence Settings', icon: Settings },
   ];
 
@@ -259,6 +263,7 @@ export default function Dashboard() {
                   {activeTab === 'leave' && 'Leave Management'}
                   {activeTab === 'leaves' && 'Team Leaves'}
                   {activeTab === 'settings' && 'Geofence Settings'}
+                  {activeTab === 'holidays' && 'Holiday Management'}
                   {activeTab === 'team' && 'My Team'}
                   {activeTab === 'my-attendance' && 'My Attendance'}
                   {activeTab === 'my-overtime' && 'My Overtime Requests'}
@@ -294,6 +299,7 @@ export default function Dashboard() {
               {adminTab === 'attendance' && <AttendanceLogs />}
               {adminTab === 'overtime' && <PendingOvertime />}
               {adminTab === 'leave' && <LeaveManagement />}
+              {adminTab === 'holidays' && <HolidayManagement />}
               {adminTab === 'settings' && <AdminSettings />}
             </>
           ) : isManager ? (
@@ -321,6 +327,7 @@ export default function Dashboard() {
         <footer className="border-t border-theme-border bg-theme-card/10 px-6 py-6 text-center text-xs text-theme-muted transition-colors duration-200">
           &copy; {new Date().getFullYear()} Attendance Management System. All rights reserved.
         </footer>
+        <AiChatAssistant />
       </div>
     </div>
   );

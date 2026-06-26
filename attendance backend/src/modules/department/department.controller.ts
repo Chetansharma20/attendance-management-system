@@ -38,7 +38,7 @@ export const getAllDepartments = asyncHandler(async (_req: Request, res: Respons
 });
 
 export const updateDepartment = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = req.params.id as string;
   const { name, description, managerId } = req.body;
 
   const department = await findDepartmentById(id);
@@ -64,7 +64,7 @@ export const updateDepartment = asyncHandler(async (req: Request, res: Response)
 });
 
 export const deleteDepartment = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = req.params.id as string;
 
   const department = await deleteDepartmentById(id);
   if (!department) {

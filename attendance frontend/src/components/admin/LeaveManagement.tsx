@@ -7,7 +7,8 @@ import {
   useGetAllLeavesQuery,
   useUpdateLeaveStatusMutation,
 } from '../../redux/api/leaveApi';
-import { Settings, BarChart3, ListOrdered, Save } from 'lucide-react';
+import { Settings, BarChart3, ListOrdered, Save, Download } from 'lucide-react';
+import { exportToCsv } from '../../utils/csvExport';
 
 const TABS = ['Policy', 'Balances', 'All Leaves'];
 const LEAVE_ICONS: Record<string, string> = { sick: '🤒', casual: '☀️', earned: '🏖️', unpaid: '📋' };
@@ -250,22 +251,52 @@ function AllLeavesTab() {
     }
   };
 
+  const handleExportCsv = () => {
+    if (leaves.length === 0) return;
+
+    const columns = [
+      { label: 'Employee Name', key: 'employeeId', format: (val: any) => val?.name || 'Unknown' },
+      { label: 'Employee Email', key: 'employeeId', format: (val: any) => val?.email || '-' },
+      { label: 'Leave Type', key: 'leaveType' },
+      { label: 'Start Date', key: 'startDate', format: (val: any) => new Date(val).toLocaleDateString() },
+      { label: 'End Date', key: 'endDate', format: (val: any) => new Date(val).toLocaleDateString() },
+      { label: 'Total Days', key: 'totalDays' },
+      { label: 'Reason', key: 'reason' },
+      { label: 'Status', key: 'status' },
+      { label: 'Rejection Reason', key: 'rejectionReason' },
+    ];
+
+    exportToCsv(`all-employee-leaves-${new Date().toISOString().split('T')[0]}.csv`, leaves, columns);
+  };
+
   return (
     <div className="space-y-4">
-      <div className="flex gap-2 flex-wrap">
-        {['all', 'pending', 'approved', 'rejected'].map((s) => (
-          <button
-            key={s}
-            onClick={() => { setStatusFilter(s); setPage(1); }}
-            className={`px-4 py-1.5 rounded-full border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
-              statusFilter === s
-                ? 'bg-violet-600 border-violet-600 text-white shadow-md shadow-violet-500/10'
-                : 'bg-theme-card border-theme-border text-theme-muted hover:text-theme-bright hover:bg-theme-card-hover'
-            }`}
-          >
-            <span className="capitalize">{s}</span>
-          </button>
-        ))}
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex gap-2 flex-wrap">
+          {['all', 'pending', 'approved', 'rejected'].map((s) => (
+            <button
+              key={s}
+              onClick={() => { setStatusFilter(s); setPage(1); }}
+              className={`px-4 py-1.5 rounded-full border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                statusFilter === s
+                  ? 'bg-violet-600 border-violet-600 text-white shadow-md shadow-violet-500/10'
+                  : 'bg-theme-card border-theme-border text-theme-muted hover:text-theme-bright hover:bg-theme-card-hover'
+              }`}
+            >
+              <span className="capitalize">{s}</span>
+            </button>
+          ))}
+        </div>
+        
+        <button
+          onClick={handleExportCsv}
+          disabled={leaves.length === 0}
+          className="inline-flex items-center gap-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-3.5 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Export leaves to CSV"
+        >
+          <Download className="w-3.5 h-3.5" />
+          <span>Export CSV</span>
+        </button>
       </div>
 
       {isLoading ? (

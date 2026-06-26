@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useFetchUsersQuery } from '../../redux/api/authApi';
 import { Users as UsersIcon, RefreshCw, AlertCircle, UserPlus } from 'lucide-react';
 import AddUserModal from './AddUserModal';
@@ -20,6 +21,7 @@ interface UserItem {
 }
 
 export default function UsersList() {
+  const navigate = useNavigate();
   const [roleFilter, setRoleFilter] = React.useState<string>('all');
   const [currentPage, setCurrentPage] = React.useState<number>(1);
   const [showAddModal, setShowAddModal] = React.useState<boolean>(false);
@@ -61,8 +63,7 @@ export default function UsersList() {
   };
 
   const handleRowClick = (userId: string) => {
-    setSelectedUserId(userId);
-    setShowProfileModal(true);
+    navigate(`/profile/${userId}`);
   };
 
   return (

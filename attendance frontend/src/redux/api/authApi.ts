@@ -75,6 +75,35 @@ export const authApi = createApi({
       query: (id) => `/users/profile/${id}`,
       providesTags: ['User'],
     }),
+
+    // PATCH /api/v1/users/:id
+    updateUser: builder.mutation<any, { id: string; name?: string; email?: string; role?: string; departmentId?: string | null; shiftId?: string | null; managerId?: string | null }>({
+      query: ({ id, ...body }) => ({
+        url: `/users/${id}`,
+        method: 'PATCH',
+        body,
+      }),
+      invalidatesTags: ['User'],
+    }),
+
+    // DELETE /api/v1/users/:id
+    deleteUser: builder.mutation<any, string>({
+      query: (id) => ({
+        url: `/users/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['User'],
+    }),
+
+    // POST /api/v1/users/upload-profile-pic
+    uploadProfilePic: builder.mutation<any, FormData>({
+      query: (formData) => ({
+        url: '/users/upload-profile-pic',
+        method: 'POST',
+        body: formData,
+      }),
+      invalidatesTags: ['User'],
+    }),
   }),
 });
 
@@ -85,4 +114,8 @@ export const {
   useFetchUsersQuery,
   useGetMyTeamQuery,
   useGetUserProfileQuery,
+  useUpdateUserMutation,
+  useDeleteUserMutation,
+  useUploadProfilePicMutation,
 } = authApi;
+

@@ -10,6 +10,8 @@ import shiftRoutes from '../modules/shift/shift.routes.js';
 import leaveRoutes from '../modules/leave/leave.routes.js';
 import notificationRoutes from '../modules/notification/notification.routes.js';
 import departmentRoutes from '../modules/department/department.routes.js';
+import holidayRoutes from '../modules/holiday/holiday.routes.js';
+import aiRoutes from '../modules/ai/ai.routes.js';
 
 const router = express.Router();
 
@@ -24,5 +26,7 @@ router.use('/shifts', shiftRoutes);
 router.use('/leave', leaveRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/departments', departmentRoutes);
+router.use('/holiday', holidayRoutes);
+router.use('/ai', aiRoutes);
 
 export default router;

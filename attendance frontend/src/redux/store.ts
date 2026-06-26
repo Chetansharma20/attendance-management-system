@@ -7,6 +7,8 @@ import { settingsApi } from './api/settingsApi';
 import { leaveApi } from './api/leaveApi';
 import { notificationApi } from './api/notificationApi';
 import { departmentApi } from './api/departmentApi';
+import { holidayApi } from './api/holidayApi';
+import { aiApi } from './api/aiApi';
 
 const logoutMiddleware: Middleware = (store) => (next) => (action: any) => {
   if (action.type === 'auth/clearUser') {
@@ -17,6 +19,8 @@ const logoutMiddleware: Middleware = (store) => (next) => (action: any) => {
     store.dispatch(leaveApi.util.resetApiState());
     store.dispatch(notificationApi.util.resetApiState());
     store.dispatch(departmentApi.util.resetApiState());
+    store.dispatch(holidayApi.util.resetApiState());
+    store.dispatch(aiApi.util.resetApiState());
   }
   return next(action);
 };
@@ -34,6 +38,8 @@ const store = configureStore({
     [leaveApi.reducerPath]: leaveApi.reducer,
     [notificationApi.reducerPath]: notificationApi.reducer,
     [departmentApi.reducerPath]: departmentApi.reducer,
+    [holidayApi.reducerPath]: holidayApi.reducer,
+    [aiApi.reducerPath]: aiApi.reducer,
   },
 
   // RTK Query middleware handles caching, invalidation, polling
@@ -46,7 +52,9 @@ const store = configureStore({
       settingsApi.middleware,
       leaveApi.middleware,
       notificationApi.middleware,
-      departmentApi.middleware
+      departmentApi.middleware,
+      holidayApi.middleware,
+      aiApi.middleware
     ),
 });
 

@@ -240,12 +240,14 @@ export const getTodayStatsService = async (userId: string, role: string, dateStr
 
   const presentEmployees = presentLogs.map(log => {
     const u = users.find(user => user._id.toString() === log.employeeId.toString());
+    const punchIn = log.punches?.find(p => p.type === "in");
+    const punchOut = log.punches?.find(p => p.type === "out");
     return {
       _id: log.employeeId,
       name: u?.name || "Unknown",
       email: u?.email || "",
-      punchInTime: log.punchIn?.time || null,
-      punchOutTime: log.punchOut?.time || null,
+      punchInTime: punchIn?.time || null,
+      punchOutTime: punchOut?.time || null,
       arrivalStatus: log.arrivalStatus || "on-time",
     };
   });

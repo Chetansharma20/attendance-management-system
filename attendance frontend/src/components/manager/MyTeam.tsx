@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGetMyTeamQuery } from '../../redux/api/authApi';
 import { Users, RefreshCw, AlertCircle, UserCheck } from 'lucide-react';
+import EmployeeProfileModal from '../admin/EmployeeProfileModal';
 
 interface EmployeeItem {
   _id: string;
@@ -17,6 +19,7 @@ interface ToastInfo {
 }
 
 export default function MyTeam() {
+  const navigate = useNavigate();
   const {
     data: teamResponse,
     isLoading,
@@ -27,6 +30,8 @@ export default function MyTeam() {
 
   // Toast notification state
   const [toast, setToast] = useState<ToastInfo | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [showProfileModal, setShowProfileModal] = useState<boolean>(false);
 
   const employees: EmployeeItem[] = teamResponse?.data || [];
 
@@ -66,6 +71,10 @@ export default function MyTeam() {
         Not Punched
       </span>
     );
+  };
+
+  const handleRowClick = (userId: string) => {
+    navigate(`/profile/${userId}`);
   };
 
   const getErrorMsg = (err: any) => {
@@ -144,7 +153,11 @@ export default function MyTeam() {
               </thead>
               <tbody className="divide-y divide-theme-border/60 text-sm">
                 {employees.map((emp, idx) => (
-                  <tr key={emp._id} className="hover:bg-theme-card-hover/50 transition-colors">
+                  <tr 
+                    key={emp._id} 
+                    onClick={() => handleRowClick(emp._id)}
+                    className="hover:bg-theme-card-hover/70 transition-colors cursor-pointer"
+                  >
                     <td className="py-4 px-5 text-theme-muted font-mono text-xs">{idx + 1}</td>
                     <td className="py-4 px-5">
                       <div className="flex items-center gap-3">
@@ -168,7 +181,11 @@ export default function MyTeam() {
           {/* Mobile Card List */}
           <div className="md:hidden space-y-4">
             {employees.map((emp, idx) => (
-              <div key={emp._id} className="bg-theme-bg/20 border border-theme-border rounded-xl p-4 space-y-3 transition-colors duration-200">
+              <div 
+                key={emp._id} 
+                onClick={() => handleRowClick(emp._id)}
+                className="bg-theme-bg/20 border border-theme-border rounded-xl p-4 space-y-3 transition-colors duration-200 cursor-pointer hover:border-violet-500/30"
+              >
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400 flex items-center justify-center text-sm font-bold shrink-0">
                     {emp.name?.charAt(0)?.toUpperCase() || '?'}
@@ -194,6 +211,12 @@ export default function MyTeam() {
           </div>
         </>
       )}
+
+      <EmployeeProfileModal 
+        userId={selectedUserId || ''} 
+        isOpen={showProfileModal} 
+        onClose={() => setShowProfileModal(false)} 
+      />
     </section>
   );
 }

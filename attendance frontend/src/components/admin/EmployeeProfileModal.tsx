@@ -23,6 +23,7 @@ export default function EmployeeProfileModal({ userId, isOpen, onClose }: Employ
   const user = profile?.user;
   const stats = profile?.stats;
   const recentAttendance = profile?.recentAttendance || [];
+  const leaves = profile?.leaves || [];
 
   const getInitials = (name: string) => {
     return name
@@ -256,6 +257,71 @@ export default function EmployeeProfileModal({ userId, isOpen, onClose }: Employ
                                         </span>
                                       )}
                                     </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Leave Request Details */}
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-violet-600" />
+                      Leave Request Details
+                    </h3>
+                    
+                    {leaves.length === 0 ? (
+                      <div className="text-center py-6 border border-dashed border-gray-200 rounded-xl text-gray-500 text-sm">
+                        No leave records found.
+                      </div>
+                    ) : (
+                      <div className="overflow-hidden border border-gray-100 rounded-xl">
+                        <table className="min-w-full divide-y divide-gray-200 text-left text-sm">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              <th className="px-4 py-3 font-semibold text-gray-600">Type</th>
+                              <th className="px-4 py-3 font-semibold text-gray-600">Duration</th>
+                              <th className="px-4 py-3 font-semibold text-gray-600">Days</th>
+                              <th className="px-4 py-3 font-semibold text-gray-600">Reason</th>
+                              <th className="px-4 py-3 font-semibold text-gray-600">Status</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100 bg-white">
+                            {leaves.map((leave: any) => {
+                              const statusColors: Record<string, string> = {
+                                pending: 'bg-amber-50 text-amber-800 ring-1 ring-amber-600/20',
+                                approved: 'bg-green-50 text-green-700 ring-1 ring-green-600/20',
+                                rejected: 'bg-red-50 text-red-700 ring-1 ring-red-600/10'
+                              };
+                              return (
+                                <tr key={leave._id} className="hover:bg-gray-50 transition-colors">
+                                  <td className="whitespace-nowrap px-4 py-3 text-gray-900 font-medium capitalize">
+                                    {leave.leaveType}
+                                  </td>
+                                  <td className="whitespace-nowrap px-4 py-3 text-gray-500 text-xs">
+                                    {new Date(leave.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                    {' - '}
+                                    {new Date(leave.endDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                  </td>
+                                  <td className="whitespace-nowrap px-4 py-3 text-gray-950 font-semibold">
+                                    {leave.totalDays} {leave.totalDays === 1 ? 'day' : 'days'}
+                                  </td>
+                                  <td className="px-4 py-3 text-gray-600 text-xs max-w-xs truncate" title={leave.reason}>
+                                    {leave.reason}
+                                    {leave.status === 'rejected' && leave.rejectionReason && (
+                                      <p className="text-[10px] text-red-500 mt-0.5">
+                                        Reason: {leave.rejectionReason}
+                                      </p>
+                                    )}
+                                  </td>
+                                  <td className="whitespace-nowrap px-4 py-3">
+                                    <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium capitalize ${statusColors[leave.status] || ''}`}>
+                                      {leave.status}
+                                    </span>
                                   </td>
                                 </tr>
                               );

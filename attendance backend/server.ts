@@ -54,6 +54,7 @@ server.use(cookieParser());
 setupLogger(server);
 
 server.use('/api/v1', apiRouter);
+server.use('/uploads', express.static('uploads'));
 
 server.get('/', (req, res) => {
   res.send('Hello world');

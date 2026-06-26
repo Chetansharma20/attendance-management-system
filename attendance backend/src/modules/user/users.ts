@@ -47,6 +47,11 @@ const userSchema = new Schema<IUser>(
       ref: "Department",
       default: null,
     },
+
+    profilePic: {
+      type: String,
+      default: "",
+    },
   },
   {
     timestamps: true,

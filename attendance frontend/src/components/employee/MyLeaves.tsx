@@ -5,7 +5,9 @@ import {
   useApplyLeaveMutation,
   useGetLeavePolicyQuery,
 } from '../../redux/api/leaveApi';
-import { Calendar, Briefcase, PlusCircle, History } from 'lucide-react';
+import { Calendar, Briefcase, PlusCircle, History, Download } from 'lucide-react';
+import { exportToCsv } from '../../utils/csvExport';
+import { useFetchHolidaysQuery } from '../../redux/api/holidayApi';
 
 interface LeaveColorInfo {
   cardBg: string;
@@ -50,7 +52,7 @@ const STATUS_STYLES = {
   },
 };
 
-const countWeekdays = (start: string, end: string): number => {
+const countWeekdays = (start: string, end: string, holidays: any[] = []): number => {
   if (!start || !end) return 0;
   let count = 0;
   const s = new Date(start);
@@ -58,10 +60,24 @@ const countWeekdays = (start: string, end: string): number => {
   s.setHours(0, 0, 0, 0);
   e.setHours(23, 59, 59, 999);
   if (e < s) return 0;
+
+  // Set holiday dates to start of day for comparison
+  const holidayDates = holidays.map(h => {
+    const d = new Date(h.date);
+    d.setHours(0, 0, 0, 0);
+    return d.getTime();
+  });
+
   const cur = new Date(s);
   while (cur <= e) {
     const d = cur.getDay();
-    if (d !== 0 && d !== 6) count++;
+    if (d !== 0 && d !== 6) {
+      const curTime = cur.getTime();
+      const isHoliday = holidayDates.includes(curTime);
+      if (!isHoliday) {
+        count++;
+      }
+    }
     cur.setDate(cur.getDate() + 1);
   }
   return count;
@@ -78,6 +94,7 @@ export default function MyLeaves() {
   const { data: leavesData, isLoading: leavesLoading } = useGetMyLeavesQuery();
   const { data: balanceData, isLoading: balanceLoading } = useGetMyLeaveBalanceQuery();
   const { data: policyData } = useGetLeavePolicyQuery();
+  const { data: holidaysResponse } = useFetchHolidaysQuery();
   const [applyLeave, { isLoading: applying }] = useApplyLeaveMutation();
 
   const [form, setForm] = useState<ApplyForm>({ leaveType: 'sick', startDate: '', endDate: '', reason: '' });
@@ -88,8 +105,25 @@ export default function MyLeaves() {
   const leaves = leavesData?.data || [];
   const balance = balanceData?.data;
   const policy = policyData?.data;
+  const holidaysList = holidaysResponse?.data || [];
 
-  const previewDays = useMemo(() => countWeekdays(form.startDate, form.endDate), [form.startDate, form.endDate]);
+  const previewDays = useMemo(() => countWeekdays(form.startDate, form.endDate, holidaysList), [form.startDate, form.endDate, holidaysList]);
+
+  const handleExportCsv = () => {
+    if (leaves.length === 0) return;
+
+    const columns = [
+      { label: 'Leave Type', key: 'leaveType' },
+      { label: 'Start Date', key: 'startDate', format: (val: any) => new Date(val).toLocaleDateString() },
+      { label: 'End Date', key: 'endDate', format: (val: any) => new Date(val).toLocaleDateString() },
+      { label: 'Total Days', key: 'totalDays' },
+      { label: 'Reason', key: 'reason' },
+      { label: 'Status', key: 'status' },
+      { label: 'Rejection Reason', key: 'rejectionReason' },
+    ];
+
+    exportToCsv(`my-leave-history-${new Date().toISOString().split('T')[0]}.csv`, leaves, columns);
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -313,6 +347,15 @@ export default function MyLeaves() {
               <p className="text-xs text-theme-muted">Status of your current and past leave applications</p>
             </div>
           </div>
+          <button
+            onClick={handleExportCsv}
+            disabled={leaves.length === 0}
+            className="inline-flex items-center gap-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Export leaves to CSV"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Export CSV</span>
+          </button>
         </div>
 
         {leavesLoading ? (

@@ -12,7 +12,7 @@ import {
 import Leave from "../leave/leave.js";
 import Overtime from "../overtime/overtime.js";
 
-export const registerUser = async ({ name, email, password, role = "employee", managerId, shiftId, departmentId }: any) => {
+export const registerUser = async ({ name, email, password, role = "employee", managerId, shiftId, departmentId, profilePic }: any) => {
   const existingUser = await findUserByEmail(email);
 
   if (existingUser) {
@@ -29,6 +29,7 @@ export const registerUser = async ({ name, email, password, role = "employee", m
     managerId: role === "employee" ? managerId : null,
     shiftId: shiftId || null,
     departmentId: departmentId || null,
+    profilePic: profilePic || "",
   });
 
   return {
@@ -39,6 +40,7 @@ export const registerUser = async ({ name, email, password, role = "employee", m
     managerId: user.managerId,
     shiftId: user.shiftId,
     departmentId: user.departmentId,
+    profilePic: user.profilePic,
   };
 };
 
@@ -120,16 +122,20 @@ export const getUserProfileService = async (targetUserId: string) => {
   const lateArrivals = attendanceLogs.filter(log => log.arrivalStatus === "late").length;
   const earlyDepartures = attendanceLogs.filter(log => log.departureStatus === "early-departure").length;
 
-  // Fetch leaves for this month
-  const leaves = await Leave.find({
+  // Fetch all leaves for the user (not just this month) so we can display complete history, and filter in memory for stats
+  const allLeaves = await Leave.find({
     employeeId: targetUserId,
-    startDate: { $gte: startOfMonth, $lte: endOfMonth },
+  }).sort({ startDate: -1 });
+
+  const thisMonthLeaves = allLeaves.filter(l => {
+    const d = new Date(l.startDate);
+    return d >= startOfMonth && d <= endOfMonth;
   });
 
-  const approvedLeaveDays = leaves
+  const approvedLeaveDays = thisMonthLeaves
     .filter(l => l.status === "approved")
     .reduce((acc, l) => acc + (l.totalDays || 0), 0);
-  const pendingLeaves = leaves.filter(l => l.status === "pending").length;
+  const pendingLeaves = thisMonthLeaves.filter(l => l.status === "pending").length;
 
   // Fetch overtime for this month
   const overtimeRecords = await Overtime.find({
@@ -155,6 +161,8 @@ export const getUserProfileService = async (targetUserId: string) => {
       pendingOvertime,
     },
     recentAttendance: attendanceLogs.slice(0, 10),
+    leaves: allLeaves,
   };
 };
+
 

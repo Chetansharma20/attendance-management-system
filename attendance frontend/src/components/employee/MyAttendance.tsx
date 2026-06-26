@@ -16,7 +16,9 @@ import {
   ChevronUp,
   Timer,
   X,
+  Download,
 } from 'lucide-react';
+import { exportToCsv } from '../../utils/csvExport';
 
 export default function MyAttendance() {
   const {
@@ -89,6 +91,32 @@ export default function MyAttendance() {
     refetch();
   };
 
+  const handleExportCsv = () => {
+    if (logs.length === 0) return;
+    
+    const columns = [
+      { label: 'Date', key: 'date', format: (val: any) => new Date(val).toLocaleDateString() },
+      { label: 'Punch In', key: 'punches', format: (punches: any) => {
+          const time = getFirstPunchIn(punches);
+          return time ? new Date(time).toLocaleTimeString() : '-';
+        }
+      },
+      { label: 'Punch Out', key: 'punches', format: (punches: any) => {
+          const time = getLastPunchOut(punches);
+          return time ? new Date(time).toLocaleTimeString() : '-';
+        }
+      },
+      { label: 'Working Hours', key: 'workingHours', format: (val: any) => val ? val.toFixed(2) + ' hrs' : '0 hrs' },
+      { label: 'Arrival Status', key: 'arrivalStatus', format: (val: any) => val || 'On Time' },
+      { label: 'Departure Status', key: 'departureStatus', format: (val: any) => val || '-' },
+      { label: 'Completion Status', key: 'completionStatus', format: (val: any) => val || '-' },
+      { label: 'Validation Status', key: 'validation', format: (val: any) => val?.status || 'pending' },
+      { label: 'Remarks', key: 'validation', format: (val: any) => val?.remarks || '' },
+    ];
+
+    exportToCsv(`my-attendance-history-${new Date().toISOString().split('T')[0]}.csv`, logs, columns);
+  };
+
   return (
     <section className="space-y-6">
       {/* Section Header */}
@@ -103,6 +131,15 @@ export default function MyAttendance() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={handleExportCsv}
+            disabled={logs.length === 0}
+            className="inline-flex items-center gap-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Export history to CSV"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Export CSV</span>
+          </button>
           <button
             onClick={() => setIsReportOpen(true)}
             className="inline-flex items-center gap-1.5 bg-sky-500/10 hover:bg-sky-500/20 text-sky-655 dark:text-sky-400 border border-sky-500/20 px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"

@@ -1,6 +1,7 @@
 import { ApiError } from "../../utils/ApiError.js";
 import { findUserById, findTeamEmployees, findUsersExceptAdmin } from "../user/user.repository.js";
 import { countWeekdays } from "../../utils/attendanceHelpers.js";
+import Holiday from "../holiday/holiday.js";
 import { createNotificationService, notifyAdminsService } from "../notification/notification.service.js";
 import {
   findLeavePolicy,
@@ -107,10 +108,22 @@ export const applyLeaveService = async (
     throw new ApiError(400, "End date cannot be before start date");
   }
 
-  // Count only weekdays
-  const totalDays = countWeekdays(start, end);
+  // Count only weekdays, excluding public holidays
+  const holidays = await Holiday.find({
+    date: { $gte: start, $lte: end },
+  });
+
+  let holidayCount = 0;
+  holidays.forEach(h => {
+    const day = h.date.getDay();
+    if (day !== 0 && day !== 6) {
+      holidayCount++;
+    }
+  });
+
+  const totalDays = Math.max(0, countWeekdays(start, end) - holidayCount);
   if (totalDays < 1) {
-    throw new ApiError(400, "Leave request must include at least one working day (Mon–Fri)");
+    throw new ApiError(400, "Leave request must include at least one working day (excluding weekends and public holidays)");
   }
 
   // Check for overlapping pending/approved leaves
