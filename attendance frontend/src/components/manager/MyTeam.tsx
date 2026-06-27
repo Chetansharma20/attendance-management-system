@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGetMyTeamQuery } from '../../redux/api/authApi';
-import { Users, RefreshCw, AlertCircle, UserCheck } from 'lucide-react';
+import { Users, RefreshCw, AlertCircle, UserCheck, Search } from 'lucide-react';
 import EmployeeProfileModal from '../admin/EmployeeProfileModal';
 
 interface EmployeeItem {
@@ -32,8 +32,25 @@ export default function MyTeam() {
   const [toast, setToast] = useState<ToastInfo | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [showProfileModal, setShowProfileModal] = useState<boolean>(false);
+  const [searchVal, setSearchVal] = useState<string>('');
+  const [debouncedSearch, setDebouncedSearch] = useState<string>('');
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchVal);
+    }, 300);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchVal]);
 
   const employees: EmployeeItem[] = teamResponse?.data || [];
+  
+  const filteredEmployees = employees.filter(emp =>
+    emp.name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+    emp.email?.toLowerCase().includes(debouncedSearch.toLowerCase())
+  );
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast({ message, type });
@@ -96,8 +113,9 @@ export default function MyTeam() {
         </div>
       )}
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      {/* Unified Header Toolbar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-theme-border/60 pb-5">
+        {/* Left side: Icon + Title & Description */}
         <div className="flex items-center gap-3">
           <div className="p-2.5 bg-violet-500/10 text-violet-600 dark:text-violet-400 rounded-xl">
             <Users className="w-5 h-5" />
@@ -105,17 +123,38 @@ export default function MyTeam() {
           <div>
             <h2 className="text-xl font-bold text-theme-bright">My Team</h2>
             <p className="text-xs text-theme-muted">
-              {isLoading ? 'Loading...' : `${employees.length} employee${employees.length !== 1 ? 's' : ''} under your management`}
+              {isLoading
+                ? 'Loading...'
+                : searchVal
+                ? `${filteredEmployees.length} matching of ${employees.length} team members`
+                : `${employees.length} employee${employees.length !== 1 ? 's' : ''} under your management`}
             </p>
           </div>
         </div>
-        <button
-          onClick={() => refetch()}
-          className="p-2 text-theme-muted hover:text-theme-bright hover:bg-theme-card-hover rounded-lg transition-colors cursor-pointer"
-          title="Refresh team"
-        >
-          <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-        </button>
+
+        {/* Right side: Unified Controls (Search & Refresh) */}
+        <div className="flex items-center gap-2.5 w-full sm:w-auto">
+          {/* Search Input */}
+          <div className="relative flex-1 min-w-[180px] sm:flex-initial">
+            <input
+              type="text"
+              placeholder="Search team member..."
+              value={searchVal}
+              onChange={(e) => setSearchVal(e.target.value)}
+              className="w-full sm:w-60 bg-theme-bg/40 border border-theme-border/80 focus:border-violet-500 rounded-xl pl-9 pr-3 py-2 text-sm text-theme-bright focus:outline-none transition-all placeholder:text-theme-muted"
+            />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-theme-muted" />
+          </div>
+
+          {/* Refresh */}
+          <button
+            onClick={() => refetch()}
+            className="p-2.5 text-theme-muted hover:text-theme-bright hover:bg-theme-bg/80 border border-theme-border/80 rounded-xl transition-colors cursor-pointer"
+            title="Refresh team"
+          >
+            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
       </div>
 
       {/* Content */}
@@ -137,6 +176,17 @@ export default function MyTeam() {
           <p className="text-theme-muted text-sm">No employees assigned to you yet.</p>
           <p className="text-theme-muted/80 text-xs mt-1">Contact your admin to assign team members.</p>
         </div>
+      ) : filteredEmployees.length === 0 ? (
+        <div className="py-14 text-center border border-dashed border-theme-border rounded-xl bg-theme-bg/10">
+          <Search className="w-12 h-12 text-theme-muted mx-auto mb-3" />
+          <p className="text-theme-muted text-sm font-medium">No team members match "{searchVal}"</p>
+          <button
+            onClick={() => setSearchVal('')}
+            className="mt-3 text-xs font-semibold text-violet-600 dark:text-violet-400 hover:underline cursor-pointer"
+          >
+            Clear Search
+          </button>
+        </div>
       ) : (
         <>
           {/* Desktop Table */}
@@ -152,7 +202,7 @@ export default function MyTeam() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-theme-border/60 text-sm">
-                {employees.map((emp, idx) => (
+                {filteredEmployees.map((emp, idx) => (
                   <tr 
                     key={emp._id} 
                     onClick={() => handleRowClick(emp._id)}
@@ -180,7 +230,7 @@ export default function MyTeam() {
 
           {/* Mobile Card List */}
           <div className="md:hidden space-y-4">
-            {employees.map((emp, idx) => (
+            {filteredEmployees.map((emp, idx) => (
               <div 
                 key={emp._id} 
                 onClick={() => handleRowClick(emp._id)}

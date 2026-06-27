@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFetchUsersQuery } from '../../redux/api/authApi';
-import { Users as UsersIcon, RefreshCw, AlertCircle, UserPlus } from 'lucide-react';
+import { Users as UsersIcon, RefreshCw, AlertCircle, UserPlus, Search } from 'lucide-react';
 import AddUserModal from './AddUserModal';
 import EmployeeProfileModal from './EmployeeProfileModal';
 import Pagination from '../common/Pagination.jsx';
@@ -27,6 +27,20 @@ export default function UsersList() {
   const [showAddModal, setShowAddModal] = React.useState<boolean>(false);
   const [selectedUserId, setSelectedUserId] = React.useState<string | null>(null);
   const [showProfileModal, setShowProfileModal] = React.useState<boolean>(false);
+  
+  const [searchVal, setSearchVal] = React.useState<string>('');
+  const [debouncedSearch, setDebouncedSearch] = React.useState<string>('');
+
+  React.useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchVal);
+      setCurrentPage(1);
+    }, 400);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchVal]);
 
   const {
     data: usersResponse,
@@ -34,7 +48,7 @@ export default function UsersList() {
     isError: isUsersError,
     error: usersError,
     refetch: refetchUsers,
-  } = useFetchUsersQuery({ role: roleFilter, page: currentPage, limit: 10 });
+  } = useFetchUsersQuery({ role: roleFilter, page: currentPage, limit: 10, search: debouncedSearch });
 
   const users: UserItem[] = usersResponse?.data?.users || [];
   const pagination = usersResponse?.data?.pagination;
@@ -77,46 +91,57 @@ export default function UsersList() {
 
       <section className="bg-theme-card border border-theme-border rounded-2xl p-6 shadow-xl space-y-6 transition-colors duration-200">
 
-        {/* Header Row */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {/* Unified Header Toolbar */}
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 border-b border-theme-border/60 pb-5">
+          {/* Left side: Icon + Title & Description */}
           <div className="flex items-center gap-3">
             <div className="p-2.5 bg-violet-500/10 text-violet-600 dark:text-violet-400 rounded-xl">
               <UsersIcon className="w-5 h-5" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-theme-bright">Employee Directory</h2>
-              <p className="text-xs text-theme-muted">All registered employees and managers (Click a row to view profile details)</p>
+              <p className="text-xs text-theme-muted">All registered employees and managers (Click a row to view details)</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 flex-wrap">
-            {/* Role filter */}
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-theme-text">Filter:</label>
-              <select
-                value={roleFilter}
-                onChange={handleRoleChange}
-                className="bg-theme-card border border-theme-input-border rounded-lg px-3 py-1.5 text-sm text-theme-bright focus:outline-none focus:border-violet-500 transition-colors"
-              >
-                <option value="all">All Roles</option>
-                <option value="employee">Employees</option>
-                <option value="manager">Managers</option>
-              </select>
+          {/* Right side: Unified Controls (Search, Filter, Refresh, Add) */}
+          <div className="flex flex-wrap items-center gap-2.5 w-full xl:w-auto">
+            {/* Search Input */}
+            <div className="relative flex-1 min-w-[180px] sm:flex-initial">
+              <input
+                type="text"
+                placeholder="Search name or email..."
+                value={searchVal}
+                onChange={(e) => setSearchVal(e.target.value)}
+                className="w-full sm:w-60 bg-theme-bg/40 border border-theme-border/80 focus:border-violet-500 rounded-xl pl-9 pr-3 py-2 text-sm text-theme-bright focus:outline-none transition-all placeholder:text-theme-muted"
+              />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-theme-muted" />
             </div>
+
+            {/* Filter select */}
+            <select
+              value={roleFilter}
+              onChange={handleRoleChange}
+              className="bg-theme-bg/40 border border-theme-border/80 focus:border-violet-500 rounded-xl px-3 py-2 text-sm text-theme-bright focus:outline-none cursor-pointer"
+            >
+              <option value="all">All Roles</option>
+              <option value="employee">Employees</option>
+              <option value="manager">Managers</option>
+            </select>
 
             {/* Refresh */}
             <button
               onClick={() => refetchUsers()}
-              className="p-2 text-theme-muted hover:text-theme-bright hover:bg-theme-card-hover rounded-lg transition-colors cursor-pointer"
+              className="p-2.5 text-theme-muted hover:text-theme-bright hover:bg-theme-bg/80 border border-theme-border/80 rounded-xl transition-colors cursor-pointer"
               title="Refresh users"
             >
               <RefreshCw className={`w-4 h-4 ${isUsersLoading ? 'animate-spin' : ''}`} />
             </button>
 
-            {/* Add User */}
+            {/* Add Employee */}
             <button
               onClick={() => setShowAddModal(true)}
-              className="inline-flex items-center gap-2 bg-violet-600 hover:bg-violet-500 text-white font-semibold text-sm px-4 py-2 rounded-xl transition-colors cursor-pointer shadow-md"
+              className="flex items-center gap-2 bg-violet-600 hover:bg-violet-500 text-white font-semibold text-sm px-4 py-2.5 rounded-xl transition-colors cursor-pointer shadow-md shadow-violet-500/10"
             >
               <UserPlus className="w-4 h-4" />
               <span>Add Employee</span>

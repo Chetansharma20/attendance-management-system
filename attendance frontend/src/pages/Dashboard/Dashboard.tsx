@@ -1,24 +1,28 @@
-import { useState, useContext, useEffect } from 'react';
+import { useState, useContext, useEffect, lazy, Suspense } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useLogoutMutation } from '../../redux/api/authApi';
-import UsersList from '../../components/admin/Users';
-import AttendanceLogs from '../../components/admin/AttendanceLogs';
-import TeamAttendance from '../../components/manager/TeamAttendance';
-import PendingOvertime from '../../components/manager/PendingOvertime';
-import MyTeam from '../../components/manager/MyTeam';
-import MyAttendance from '../../components/employee/MyAttendance';
-import MyOvertimeRequests from '../../components/employee/MyOvertimeRequests';
-import AdminSettings from '../../components/admin/AdminSettings';
-import ShiftManagement from '../../components/admin/ShiftManagement';
-import LeaveManagement from '../../components/admin/LeaveManagement';
-import DepartmentManagement from '../../components/admin/DepartmentManagement';
-import HolidayManagement from '../../components/admin/HolidayManagement';
-import TeamLeaves from '../../components/manager/TeamLeaves';
-import MyLeaves from '../../components/employee/MyLeaves';
 import NotificationBell from '../../components/NotificationBell.jsx';
-import AnalyticsDashboard from '../../components/analytics/AnalyticsDashboard.jsx';
-import AiChatAssistant from '../../components/common/AiChatAssistant';
+
+// Lazy loaded components
+const UsersList = lazy(() => import('../../components/admin/Users'));
+const AttendanceLogs = lazy(() => import('../../components/admin/AttendanceLogs'));
+const TeamAttendance = lazy(() => import('../../components/manager/TeamAttendance'));
+const PendingOvertime = lazy(() => import('../../components/manager/PendingOvertime'));
+const OvertimeHistory = lazy(() => import('../../components/admin/OvertimeHistory'));
+const MyTeam = lazy(() => import('../../components/manager/MyTeam'));
+const MyAttendance = lazy(() => import('../../components/employee/MyAttendance'));
+const MyOvertimeRequests = lazy(() => import('../../components/employee/MyOvertimeRequests'));
+const AdminSettings = lazy(() => import('../../components/admin/AdminSettings'));
+const ShiftManagement = lazy(() => import('../../components/admin/ShiftManagement'));
+const LeaveManagement = lazy(() => import('../../components/admin/LeaveManagement'));
+const DepartmentManagement = lazy(() => import('../../components/admin/DepartmentManagement'));
+const HolidayManagement = lazy(() => import('../../components/admin/HolidayManagement'));
+const TeamLeaves = lazy(() => import('../../components/manager/TeamLeaves'));
+const MyLeaves = lazy(() => import('../../components/employee/MyLeaves'));
+const AnalyticsDashboard = lazy(() => import('../../components/analytics/AnalyticsDashboard.jsx'));
+const AiChatAssistant = lazy(() => import('../../components/common/AiChatAssistant'));
+const CompanyCalendar = lazy(() => import('../../components/common/CompanyCalendar'));
 
 import { 
   LogOut, 
@@ -104,13 +108,16 @@ export default function Dashboard() {
     { id: 'shifts', label: 'Manage Shifts', icon: Calendar },
     { id: 'attendance', label: 'Attendance Records', icon: ClipboardList },
     { id: 'overtime', label: 'Overtime Requests', icon: Hourglass },
+    { id: 'overtime-history', label: 'Overtime History', icon: Clock },
     { id: 'leave', label: 'Leave Management', icon: FileSpreadsheet },
     { id: 'holidays', label: 'Holidays', icon: Calendar },
+    { id: 'calendar', label: 'Company Calendar', icon: Calendar },
     { id: 'settings', label: 'Geofence Settings', icon: Settings },
   ];
 
   const managerTabs: Tab[] = [
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
+    { id: 'calendar', label: 'Company Calendar', icon: Calendar },
     { id: 'team', label: 'My Team', icon: Users },
     { id: 'attendance', label: 'Team Attendance', icon: ClipboardList },
     { id: 'overtime', label: 'Team Overtime', icon: Hourglass },
@@ -122,6 +129,7 @@ export default function Dashboard() {
 
   const employeeTabs: Tab[] = [
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
+    { id: 'calendar', label: 'Company Calendar', icon: Calendar },
     { id: 'attendance', label: 'Punch & Attendance', icon: Calendar },
     { id: 'overtime', label: 'Overtime Requests', icon: Clock },
     { id: 'leaves', label: 'My Leaves', icon: FileText },
@@ -260,8 +268,10 @@ export default function Dashboard() {
                   {activeTab === 'shifts' && 'Manage Shifts'}
                   {activeTab === 'attendance' && (isAdmin ? 'Attendance Records' : 'Team Attendance')}
                   {activeTab === 'overtime' && (isAdmin ? 'Overtime Requests' : 'Team Overtime')}
+                  {activeTab === 'overtime-history' && 'Overtime History'}
                   {activeTab === 'leave' && 'Leave Management'}
                   {activeTab === 'leaves' && 'Team Leaves'}
+                  {activeTab === 'calendar' && 'Company Calendar'}
                   {activeTab === 'settings' && 'Geofence Settings'}
                   {activeTab === 'holidays' && 'Holiday Management'}
                   {activeTab === 'team' && 'My Team'}
@@ -290,44 +300,56 @@ export default function Dashboard() {
 
         {/* Tab Content */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-8 max-w-7xl w-full mx-auto">
-          {isAdmin ? (
-            <>
-              {adminTab === 'dashboard' && <AnalyticsDashboard />}
-              {adminTab === 'users' && <UsersList />}
-              {adminTab === 'departments' && <DepartmentManagement />}
-              {adminTab === 'shifts' && <ShiftManagement />}
-              {adminTab === 'attendance' && <AttendanceLogs />}
-              {adminTab === 'overtime' && <PendingOvertime />}
-              {adminTab === 'leave' && <LeaveManagement />}
-              {adminTab === 'holidays' && <HolidayManagement />}
-              {adminTab === 'settings' && <AdminSettings />}
-            </>
-          ) : isManager ? (
-            <>
-              {managerTab === 'dashboard' && <AnalyticsDashboard />}
-              {managerTab === 'team' && <MyTeam />}
-              {managerTab === 'attendance' && <TeamAttendance />}
-              {managerTab === 'overtime' && <PendingOvertime />}
-              {managerTab === 'leaves' && <TeamLeaves />}
-              {managerTab === 'my-attendance' && <MyAttendance />}
-              {managerTab === 'my-overtime' && <MyOvertimeRequests />}
-              {managerTab === 'my-leaves' && <MyLeaves />}
-            </>
-          ) : (
-            <>
-              {employeeTab === 'dashboard' && <AnalyticsDashboard />}
-              {employeeTab === 'attendance' && <MyAttendance />}
-              {employeeTab === 'overtime' && <MyOvertimeRequests />}
-              {employeeTab === 'leaves' && <MyLeaves />}
-            </>
-          )}
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-violet-500"></div>
+            </div>
+          }>
+            {isAdmin ? (
+              <>
+                {adminTab === 'dashboard' && <AnalyticsDashboard />}
+                {adminTab === 'users' && <UsersList />}
+                {adminTab === 'departments' && <DepartmentManagement />}
+                {adminTab === 'shifts' && <ShiftManagement />}
+                {adminTab === 'attendance' && <AttendanceLogs />}
+                {adminTab === 'overtime' && <PendingOvertime />}
+                {adminTab === 'overtime-history' && <OvertimeHistory />}
+                {adminTab === 'leave' && <LeaveManagement />}
+                {adminTab === 'holidays' && <HolidayManagement />}
+                {adminTab === 'calendar' && <CompanyCalendar />}
+                {adminTab === 'settings' && <AdminSettings />}
+              </>
+            ) : isManager ? (
+              <>
+                {managerTab === 'dashboard' && <AnalyticsDashboard />}
+                {managerTab === 'calendar' && <CompanyCalendar />}
+                {managerTab === 'team' && <MyTeam />}
+                {managerTab === 'attendance' && <TeamAttendance />}
+                {managerTab === 'overtime' && <PendingOvertime />}
+                {managerTab === 'leaves' && <TeamLeaves />}
+                {managerTab === 'my-attendance' && <MyAttendance />}
+                {managerTab === 'my-overtime' && <MyOvertimeRequests />}
+                {managerTab === 'my-leaves' && <MyLeaves />}
+              </>
+            ) : (
+              <>
+                {employeeTab === 'dashboard' && <AnalyticsDashboard />}
+                {employeeTab === 'calendar' && <CompanyCalendar />}
+                {employeeTab === 'attendance' && <MyAttendance />}
+                {employeeTab === 'overtime' && <MyOvertimeRequests />}
+                {employeeTab === 'leaves' && <MyLeaves />}
+              </>
+            )}
+          </Suspense>
         </main>
 
         {/* Footer */}
         <footer className="border-t border-theme-border bg-theme-card/10 px-6 py-6 text-center text-xs text-theme-muted transition-colors duration-200">
           &copy; {new Date().getFullYear()} Attendance Management System. All rights reserved.
         </footer>
-        <AiChatAssistant />
+        <Suspense fallback={null}>
+          <AiChatAssistant />
+        </Suspense>
       </div>
     </div>
   );

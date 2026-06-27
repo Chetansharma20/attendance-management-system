@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Edit, Loader2, AlertCircle } from 'lucide-react';
-import { useUpdateUserMutation, useFetchUsersQuery } from '../../redux/api/authApi';
+import { useUpdateUserMutation, useFetchUsersQuery, useUploadProfilePicMutation } from '../../redux/api/authApi';
 import { useGetShiftsQuery } from '../../redux/api/settingsApi';
 import { useGetAllDepartmentsQuery } from '../../redux/api/departmentApi';
 
@@ -38,8 +38,10 @@ export default function EditUserModal({ isOpen, onClose, user }: EditUserModalPr
   });
   const [formError, setFormError] = useState<string>('');
   const [successMsg, setSuccessMsg] = useState<string>('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const [updateUser, { isLoading }] = useUpdateUserMutation();
+  const [uploadProfilePic, { isLoading: isUploadingPic }] = useUploadProfilePicMutation();
 
   const { data: managersResponse } = useFetchUsersQuery({ role: 'manager', limit: 100 });
   const managers = managersResponse?.data?.users || [];
@@ -61,6 +63,7 @@ export default function EditUserModal({ isOpen, onClose, user }: EditUserModalPr
         shiftId: typeof user.shiftId === 'object' ? user.shiftId?._id || '' : user.shiftId || '',
         departmentId: typeof user.departmentId === 'object' ? user.departmentId?._id || '' : user.departmentId || '',
       });
+      setSelectedFile(null);
       setFormError('');
       setSuccessMsg('');
     }
@@ -96,10 +99,16 @@ export default function EditUserModal({ isOpen, onClose, user }: EditUserModalPr
 
     try {
       await updateUser(payload).unwrap();
-      setSuccessMsg('Profile updated successfully!');
-      setTimeout(() => {
-        onClose();
-      }, 1000);
+      
+      // Upload photo if selected
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append('profilePic', selectedFile);
+        formData.append('userId', user._id);
+        await uploadProfilePic(formData).unwrap();
+      }
+
+      onClose();
     } catch (err: any) {
       setFormError(err?.data?.message || err?.error || 'Update failed. Please try again.');
     }
@@ -225,6 +234,17 @@ export default function EditUserModal({ isOpen, onClose, user }: EditUserModalPr
             </div>
           )}
 
+          {/* Profile Photo Upload */}
+          <div className="flex flex-col gap-1.5 pt-2">
+            <label className="text-xs font-semibold text-theme-muted uppercase tracking-wider">Profile Photo (Optional)</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+              className="w-full bg-theme-bg border border-theme-input-border text-theme-text rounded-xl px-3 py-2 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-colors text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-violet-500/10 file:text-violet-600 dark:file:text-violet-400 hover:file:bg-violet-500/20"
+            />
+          </div>
+
           {/* Department Assignment */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-theme-text uppercase tracking-wider">
@@ -282,10 +302,10 @@ export default function EditUserModal({ isOpen, onClose, user }: EditUserModalPr
             </button>
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || isUploadingPic}
               className="flex-1 inline-flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-500 disabled:opacity-60 text-white font-bold text-sm px-4 py-2.5 rounded-xl transition-all cursor-pointer"
             >
-              {isLoading ? (
+              {(isLoading || isUploadingPic) ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
                   <span>Saving...</span>

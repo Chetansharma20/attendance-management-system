@@ -44,11 +44,18 @@ export const registerUser = async ({ name, email, password, role = "employee", m
   };
 };
 
-export const getUsersExceptAdmin = async (roleFilter: string | undefined, page = 1, limit = 10) => {
+export const getUsersExceptAdmin = async (roleFilter: string | undefined, page = 1, limit = 10, search?: string) => {
   const query: any = { role: { $ne: "admin" } };
 
   if (roleFilter && roleFilter !== "all") {
     query.role = roleFilter;
+  }
+
+  if (search) {
+    query.$or = [
+      { name: { $regex: search, $options: "i" } },
+      { email: { $regex: search, $options: "i" } }
+    ];
   }
 
   const skip = (page - 1) * limit;

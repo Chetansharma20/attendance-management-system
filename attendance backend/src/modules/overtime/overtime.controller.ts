@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { updateOvertimeStatusService, getPendingOvertimeService, requestOvertimeService, getMyRequestsService } from "./overtime.service.js";
+import { updateOvertimeStatusService, getPendingOvertimeService, requestOvertimeService, getMyRequestsService, getAllOvertimesService, deleteOvertimeService } from "./overtime.service.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
 
@@ -21,6 +21,22 @@ export const updateOvertimeStatus = asyncHandler(async (req: Request, res: Respo
 });
 
 export const getMyRequests = asyncHandler(async (req: Request, res: Response) => {
-  const requests = await getMyRequestsService((req as any).user._id);
-  res.status(200).json(new ApiResponse(200, requests, "My overtime requests fetched successfully"));
+  const result = await getMyRequestsService((req as any).user._id);
+  res.status(200).json(new ApiResponse(200, result, "Your overtime requests fetched successfully"));
+});
+
+export const getAllOvertimes = asyncHandler(async (req: Request, res: Response) => {
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+  const { status } = req.query;
+
+  const statusStr = typeof status === "string" ? status : undefined;
+  const data = await getAllOvertimesService(page, limit, statusStr);
+  res.status(200).json(new ApiResponse(200, data, "All overtime requests fetched successfully"));
+});
+
+export const deleteOvertime = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await deleteOvertimeService(id as string);
+  res.status(200).json(new ApiResponse(200, result, "Overtime request deleted successfully"));
 });

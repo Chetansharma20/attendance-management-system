@@ -1,6 +1,7 @@
 import { ApiError } from "../../utils/ApiError.js";
 import { findAttendanceById } from "../attendance/attendance.repository.js";
 import { createNotificationService, notifyAdminsService } from "../notification/notification.service.js";
+import Notification from "../notification/notification.js";
 import { findUserById, findTeamEmployees } from "../user/user.repository.js";
 import {
   findOvertimeByAttendanceId,
@@ -9,6 +10,7 @@ import {
   findOvertimeByIdAndPopulateEmployee,
   findOvertimesByEmployeeId,
 } from "./overtime.repository.js";
+import Overtime from "./overtime.js";
 
 export const requestOvertimeService = async (
   employeeId: string,
@@ -106,9 +108,53 @@ export const updateOvertimeStatusService = async (
     referenceId: request._id,
   });
 
+  // Mark all "overtime_request" notifications for this specific request as read for managers/admins
+  await Notification.updateMany(
+    { type: "overtime_request", referenceId: request._id },
+    { $set: { isRead: true } }
+  );
+
   return request;
 };
 
 export const getMyRequestsService = async (employeeId: string) => {
   return await findOvertimesByEmployeeId(employeeId);
+};
+
+export const getAllOvertimesService = async (page = 1, limit = 10, status?: string) => {
+  const query: any = {};
+  if (status && status !== "all") query.status = status;
+
+  const skip = (page - 1) * limit;
+
+  const overtimes = await Overtime.find(query)
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
+    .populate("employeeId", "name email");
+
+  const total = await Overtime.countDocuments(query);
+
+  return {
+    overtimes,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+};
+
+export const deleteOvertimeService = async (requestId: string) => {
+  const request = await Overtime.findById(requestId);
+  if (!request) {
+    throw new ApiError(404, "Overtime request not found");
+  }
+
+  // Also clean up any pending notifications for this overtime request
+  await Notification.deleteMany({ type: "overtime_request", referenceId: request._id });
+
+  await Overtime.findByIdAndDelete(requestId);
+  return request;
 };

@@ -82,13 +82,13 @@ export default function NotificationBell() {
           </div>
 
           <div className="flex-1 overflow-y-auto divide-y divide-zinc-150 dark:divide-zinc-800">
-            {notifications.length === 0 ? (
+            {notifications.filter(n => !n.isRead).length === 0 ? (
               <div className="p-8 text-center flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-500 gap-2">
                 <Inbox className="w-8 h-8 opacity-60" />
-                <p className="text-xs">No notifications yet</p>
+                <p className="text-xs">No new notifications</p>
               </div>
             ) : (
-              notifications.map((notif) => (
+              notifications.filter(n => !n.isRead).map((notif) => (
                 <div
                    key={notif._id}
                    onClick={() => handleNotificationClick(notif)}

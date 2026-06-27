@@ -25,6 +25,14 @@ export const holidayApi = createApi({
       }),
       invalidatesTags: ['Holiday'],
     }),
+    syncHolidays: builder.mutation<any, { country: string; year: number }>({
+      query: (body) => ({
+        url: '/holiday/sync',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Holiday'],
+    }),
   }),
 });
 
@@ -32,4 +40,5 @@ export const {
   useFetchHolidaysQuery,
   useCreateHolidayMutation,
   useDeleteHolidayMutation,
+  useSyncHolidaysMutation,
 } = holidayApi;

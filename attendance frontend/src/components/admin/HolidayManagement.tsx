@@ -2,20 +2,34 @@ import React, { useState } from 'react';
 import { 
   useFetchHolidaysQuery, 
   useCreateHolidayMutation, 
-  useDeleteHolidayMutation 
+  useDeleteHolidayMutation,
+  useSyncHolidaysMutation
 } from '../../redux/api/holidayApi';
-import { Calendar, Trash2, Plus, AlertCircle, RefreshCw } from 'lucide-react';
+import { Calendar, Trash2, Plus, AlertCircle, RefreshCw, Globe, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function HolidayManagement() {
   const { data: response, isLoading, isError, refetch } = useFetchHolidaysQuery();
   const [createHoliday, { isLoading: isCreating }] = useCreateHolidayMutation();
   const [deleteHoliday, { isLoading: isDeleting }] = useDeleteHolidayMutation();
+  const [syncHolidays, { isLoading: isSyncing }] = useSyncHolidaysMutation();
 
   const [form, setForm] = useState({ name: '', date: '', type: 'public', description: '' });
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
+  // Sync state
+  const [syncCountry, setSyncCountry] = useState('IN');
+  const [syncYear, setSyncYear] = useState<number>(new Date().getFullYear());
+  const [syncError, setSyncError] = useState('');
+  const [syncSuccess, setSyncSuccess] = useState('');
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   const holidays = response?.data || [];
+  const totalPages = Math.ceil(holidays.length / itemsPerPage);
+  const currentHolidays = holidays.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -42,6 +56,21 @@ export default function HolidayManagement() {
     }
   };
 
+  const handleSyncSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSyncError('');
+    setSyncSuccess('');
+
+    try {
+      const res = await syncHolidays({ country: syncCountry, year: Number(syncYear) }).unwrap();
+      const { createdCount, skippedCount } = res?.data || {};
+      setSyncSuccess(`Synced successfully! ${createdCount} holidays imported, ${skippedCount} duplicates skipped.`);
+      refetch();
+    } catch (err: any) {
+      setSyncError(err?.data?.message || 'Failed to sync holidays. Please verify country and year.');
+    }
+  };
+
   const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this holiday?')) return;
     try {
@@ -64,88 +93,156 @@ export default function HolidayManagement() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       
-      {/* Create Holiday Form */}
-      <section className="lg:col-span-1 bg-theme-card border border-theme-border rounded-2xl p-6 shadow-xl space-y-6 h-fit transition-colors duration-200">
-        <div>
-          <h2 className="text-lg font-bold text-theme-bright">Add New Holiday</h2>
-          <p className="text-xs text-theme-muted">Schedule a new company public holiday</p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-theme-muted">Holiday Name</label>
-            <input
-              type="text"
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              placeholder="e.g. New Year's Day"
-              className="w-full bg-theme-bg border border-theme-input-border text-theme-text rounded-lg px-3 py-2 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-colors text-sm"
-            />
+      {/* Create / Sync Left Panel */}
+      <div className="lg:col-span-1 space-y-6">
+        
+        {/* Create Holiday Form */}
+        <section className="bg-theme-card border border-theme-border rounded-2xl p-6 shadow-xl space-y-6 h-fit transition-colors duration-200">
+          <div>
+            <h2 className="text-lg font-bold text-theme-bright">Add New Holiday</h2>
+            <p className="text-xs text-theme-muted">Schedule a new company public holiday</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-theme-muted">Date</label>
+              <label className="text-xs font-semibold text-theme-muted">Holiday Name</label>
               <input
-                type="date"
-                name="date"
-                value={form.date}
+                type="text"
+                name="name"
+                value={form.name}
                 onChange={handleChange}
-                className="w-full bg-theme-bg border border-theme-input-border text-theme-text rounded-lg px-3 py-2 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-colors text-sm cursor-pointer"
+                placeholder="e.g. New Year's Day"
+                className="w-full bg-theme-bg border border-theme-input-border text-theme-text rounded-lg px-3 py-2 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-colors text-sm"
               />
             </div>
 
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-theme-muted">Date</label>
+                <input
+                  type="date"
+                  name="date"
+                  value={form.date}
+                  onChange={handleChange}
+                  className="w-full bg-theme-bg border border-theme-input-border text-theme-text rounded-lg px-3 py-2 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-colors text-sm cursor-pointer"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-theme-muted">Type</label>
+                <select
+                  name="type"
+                  value={form.type}
+                  onChange={handleChange}
+                  className="w-full bg-theme-bg border border-theme-input-border text-theme-text rounded-lg px-3 py-2 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-colors text-sm cursor-pointer"
+                >
+                  <option value="public">Public</option>
+                  <option value="restricted">Restricted</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-theme-muted">Type</label>
-              <select
-                name="type"
-                value={form.type}
+              <label className="text-xs font-semibold text-theme-muted">Description (Optional)</label>
+              <textarea
+                name="description"
+                value={form.description}
                 onChange={handleChange}
+                rows={3}
+                placeholder="Provide holiday details..."
+                className="w-full bg-theme-bg border border-theme-input-border text-theme-text rounded-lg px-3 py-2 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-colors text-sm resize-none"
+              />
+            </div>
+
+            {errorMsg && (
+              <div className="bg-red-500/10 border border-red-500/20 text-red-700 dark:text-red-400 p-3 rounded-lg text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{errorMsg}</span>
+              </div>
+            )}
+
+            {successMsg && (
+              <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 p-3 rounded-lg text-xs">
+                ✨ {successMsg}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={isCreating}
+              className="w-full inline-flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-500 text-white font-semibold text-sm px-4 py-2.5 rounded-xl transition-all cursor-pointer shadow-md"
+            >
+              <Plus className="w-4 h-4" />
+              <span>{isCreating ? 'Adding...' : 'Add Holiday'}</span>
+            </button>
+          </form>
+        </section>
+
+        {/* Sync Public Holidays Form */}
+        <section className="bg-theme-card border border-theme-border rounded-2xl p-6 shadow-xl space-y-6 transition-colors duration-200">
+          <div>
+            <h2 className="text-lg font-bold text-theme-bright">Sync Public Holidays</h2>
+            <p className="text-xs text-theme-muted">Auto-import official public holidays via API</p>
+          </div>
+
+          <form onSubmit={handleSyncSubmit} className="space-y-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-theme-muted">Select Country</label>
+              <select
+                value={syncCountry}
+                onChange={(e) => setSyncCountry(e.target.value)}
                 className="w-full bg-theme-bg border border-theme-input-border text-theme-text rounded-lg px-3 py-2 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-colors text-sm cursor-pointer"
               >
-                <option value="public">Public</option>
-                <option value="restricted">Restricted</option>
-                <option value="other">Other</option>
+                <option value="IN">India (IN)</option>
+                <option value="US">United States (US)</option>
+                <option value="GB">United Kingdom (GB)</option>
+                <option value="CA">Canada (CA)</option>
+                <option value="AU">Australia (AU)</option>
+                <option value="DE">Germany (DE)</option>
+                <option value="FR">France (FR)</option>
+                <option value="SG">Singapore (SG)</option>
+                <option value="AE">United Arab Emirates (AE)</option>
               </select>
             </div>
-          </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-theme-muted">Description (Optional)</label>
-            <textarea
-              name="description"
-              value={form.description}
-              onChange={handleChange}
-              rows={3}
-              placeholder="Provide holiday details..."
-              className="w-full bg-theme-bg border border-theme-input-border text-theme-text rounded-lg px-3 py-2 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-colors text-sm resize-none"
-            />
-          </div>
-
-          {errorMsg && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-700 dark:text-red-400 p-3 rounded-lg text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>{errorMsg}</span>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-theme-muted">Year</label>
+              <input
+                type="number"
+                min="2020"
+                max="2035"
+                value={syncYear}
+                onChange={(e) => setSyncYear(Number(e.target.value))}
+                className="w-full bg-theme-bg border border-theme-input-border text-theme-text rounded-lg px-3 py-2 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-colors text-sm"
+              />
             </div>
-          )}
 
-          {successMsg && (
-            <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 p-3 rounded-lg text-xs">
-              ✨ {successMsg}
-            </div>
-          )}
+            {syncError && (
+              <div className="bg-red-500/10 border border-red-500/20 text-red-700 dark:text-red-400 p-3 rounded-lg text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{syncError}</span>
+              </div>
+            )}
 
-          <button
-            type="submit"
-            disabled={isCreating}
-            className="w-full inline-flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-500 text-white font-semibold text-sm px-4 py-2.5 rounded-xl transition-all cursor-pointer shadow-md"
-          >
-            <Plus className="w-4 h-4" />
-            <span>{isCreating ? 'Adding...' : 'Add Holiday'}</span>
-          </button>
-        </form>
-      </section>
+            {syncSuccess && (
+              <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 p-3 rounded-lg text-xs">
+                ✨ {syncSuccess}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={isSyncing}
+              className="w-full inline-flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-500 text-white font-semibold text-sm px-4 py-2.5 rounded-xl transition-all cursor-pointer shadow-md"
+            >
+              <Globe className="w-4 h-4" />
+              <span>{isSyncing ? 'Syncing...' : 'Sync Holidays'}</span>
+            </button>
+          </form>
+        </section>
+
+      </div>
 
       {/* Holiday Directory List */}
       <section className="lg:col-span-2 bg-theme-card border border-theme-border rounded-2xl p-6 shadow-xl space-y-6 transition-colors duration-200">
@@ -195,7 +292,7 @@ export default function HolidayManagement() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-theme-border/60 text-sm">
-                {holidays.map((h: any) => (
+                {currentHolidays.map((h: any) => (
                   <tr key={h._id} className="hover:bg-theme-card-hover/40 transition-colors">
                     <td className="py-4 px-5 font-semibold text-theme-bright">{h.name}</td>
                     <td className="py-4 px-5 text-theme-text">{formatDate(h.date)}</td>
@@ -224,6 +321,38 @@ export default function HolidayManagement() {
                 ))}
               </tbody>
             </table>
+            
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between px-5 py-4 border-t border-theme-border bg-theme-bg/30">
+                <span className="text-xs text-theme-muted">
+                  Showing <span className="font-medium text-theme-text">{(currentPage - 1) * itemsPerPage + 1}</span> to{' '}
+                  <span className="font-medium text-theme-text">
+                    {Math.min(currentPage * itemsPerPage, holidays.length)}
+                  </span>{' '}
+                  of <span className="font-medium text-theme-text">{holidays.length}</span> results
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="p-1.5 rounded-lg border border-theme-border text-theme-text hover:bg-theme-card-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <span className="text-xs font-medium text-theme-text px-2">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="p-1.5 rounded-lg border border-theme-border text-theme-text hover:bg-theme-card-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </section>

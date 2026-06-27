@@ -16,8 +16,9 @@ export const fetchUsers = asyncHandler(async (req: Request, res: Response) => {
   const role = req.query.role as string | undefined;
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 10;
+  const search = req.query.search as string | undefined;
 
-  const users = await getUsersExceptAdmin(role, page, limit);
+  const users = await getUsersExceptAdmin(role, page, limit, search);
   res.status(200).json(new ApiResponse(200, users, "Users fetched successfully"));
 });
 
@@ -32,7 +33,9 @@ export const getUserProfile = asyncHandler(async (req: Request, res: Response) =
 });
 
 export const uploadProfilePic = asyncHandler(async (req: Request, res: Response) => {
-  const userId = (req as any).user._id;
+  const requestUserId = (req as any).user._id;
+  const isAdmin = (req as any).user.role === 'admin';
+  const userId = (isAdmin && req.body.userId) ? req.body.userId : requestUserId;
   const file = (req as any).file;
 
   if (!file) {

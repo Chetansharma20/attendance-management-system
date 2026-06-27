@@ -30,6 +30,23 @@ export const overtimeApi = createApi({
       }),
       invalidatesTags: ['Overtime'],
     }),
+    getAllOvertime: builder.query<any, { page?: number; limit?: number; status?: string }>({
+      query: (params) => {
+        const queryParams = new URLSearchParams();
+        if (params?.page) queryParams.append('page', params.page.toString());
+        if (params?.limit) queryParams.append('limit', params.limit.toString());
+        if (params?.status) queryParams.append('status', params.status);
+        return `/overtime/all?${queryParams.toString()}`;
+      },
+      providesTags: ['Overtime'],
+    }),
+    deleteOvertime: builder.mutation<any, string>({
+      query: (id) => ({
+        url: `/overtime/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Overtime'],
+    }),
   }),
 });
 
@@ -38,4 +55,6 @@ export const {
   useGetMyOvertimeRequestsQuery,
   useGetPendingOvertimeQuery,
   useUpdateOvertimeStatusMutation,
+  useGetAllOvertimeQuery,
+  useDeleteOvertimeMutation,
 } = overtimeApi;

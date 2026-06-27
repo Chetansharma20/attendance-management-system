@@ -50,30 +50,37 @@ export const authApi = createApi({
         method: 'POST',
         body: userData,
       }),
-      invalidatesTags: ['User'],
+      invalidatesTags: [{ type: 'User', id: 'LIST' }],
     }),
 
     // GET /api/v1/users/fetchusers
-    fetchUsers: builder.query<any, { role?: string; page?: number; limit?: number } | void>({
+    fetchUsers: builder.query<any, { role?: string; page?: number; limit?: number; search?: string } | void>({
       query: (params) => {
         const role = params?.role ?? 'all';
         const page = params?.page ?? 1;
         const limit = params?.limit ?? 10;
-        return `/users/fetchusers?role=${role}&page=${page}&limit=${limit}`;
+        const search = params?.search ?? '';
+        return `/users/fetchusers?role=${role}&page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`;
       },
-      providesTags: ['User'],
+      providesTags: (result) =>
+        result?.data?.users
+          ? [
+              ...result.data.users.map(({ _id }: any) => ({ type: 'User' as const, id: _id })),
+              { type: 'User', id: 'LIST' },
+            ]
+          : [{ type: 'User', id: 'LIST' }],
     }),
 
     // GET /api/v1/users/my-team  (manager only)
     getMyTeam: builder.query<any, void>({
       query: () => '/users/my-team',
-      providesTags: ['User'],
+      providesTags: [{ type: 'User', id: 'LIST' }],
     }),
 
     // GET /api/v1/users/profile/:id
     getUserProfile: builder.query<any, string>({
       query: (id) => `/users/profile/${id}`,
-      providesTags: ['User'],
+      providesTags: (result, error, id) => [{ type: 'User', id }],
     }),
 
     // PATCH /api/v1/users/:id
@@ -83,7 +90,7 @@ export const authApi = createApi({
         method: 'PATCH',
         body,
       }),
-      invalidatesTags: ['User'],
+      invalidatesTags: (result, error, { id }) => [{ type: 'User', id }, { type: 'User', id: 'LIST' }],
     }),
 
     // DELETE /api/v1/users/:id
@@ -92,7 +99,7 @@ export const authApi = createApi({
         url: `/users/${id}`,
         method: 'DELETE',
       }),
-      invalidatesTags: ['User'],
+      invalidatesTags: (result, error, id) => [{ type: 'User', id }, { type: 'User', id: 'LIST' }],
     }),
 
     // POST /api/v1/users/upload-profile-pic
