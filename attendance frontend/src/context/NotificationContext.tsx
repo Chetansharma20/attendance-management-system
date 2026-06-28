@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { useSocket } from "./SocketContext.js";
-import { useGetMyNotificationsQuery, useMarkAsReadMutation } from "../redux/api/notificationApi";
+import { useGetMyNotificationsQuery, useMarkAsReadMutation, useDeleteNotificationMutation, useClearAllNotificationsMutation } from "../redux/api/notificationApi";
 import { useSelector } from "react-redux";
 import { Bell, X } from "lucide-react";
 
@@ -18,6 +18,8 @@ export interface NotificationContextType {
   notifications: INotification[];
   unreadCount: number;
   markAsRead: (id: string) => { unwrap: () => Promise<any> };
+  deleteNotification: (id: string) => { unwrap: () => Promise<any> };
+  clearAllNotifications: () => { unwrap: () => Promise<any> };
   refetch: () => void;
 }
 
@@ -37,6 +39,8 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
   });
 
   const [markAsRead] = useMarkAsReadMutation();
+  const [deleteNotification] = useDeleteNotificationMutation();
+  const [clearAllNotifications] = useClearAllNotificationsMutation();
 
   const notifications: INotification[] = notificationsResponse?.data || [];
   const unreadCount = notifications.filter((n) => !n.isRead).length;
@@ -86,7 +90,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
   }, [activeToast]);
 
   return (
-    <NotificationContext.Provider value={{ notifications, unreadCount, markAsRead, refetch }}>
+    <NotificationContext.Provider value={{ notifications, unreadCount, markAsRead, deleteNotification, clearAllNotifications, refetch }}>
       {children}
       
       {/* Global Toast Alert Overlay */}

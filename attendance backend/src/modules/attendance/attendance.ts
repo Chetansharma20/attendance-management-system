@@ -61,7 +61,7 @@ const attendanceSchema = new Schema<IAttendance>(
 
     completionStatus: {
       type: String,
-      enum: ["completed", "incomplete"],
+      enum: ["completed", "half-day", "incomplete"],
       default: "incomplete",
     },
 

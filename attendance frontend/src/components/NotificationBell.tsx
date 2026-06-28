@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNotifications, INotification } from "../context/NotificationContext.js";
-import { Bell, Inbox } from "lucide-react";
+import { Bell, Inbox, Trash2, CheckCircle2 } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 export default function NotificationBell() {
-  const { notifications, unreadCount, markAsRead } = useNotifications();
+  const { notifications, unreadCount, markAsRead, deleteNotification, clearAllNotifications } = useNotifications();
   const { user } = useSelector((state: any) => state.auth);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -50,6 +50,17 @@ export default function NotificationBell() {
     }
   };
 
+  const handleDelete = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    await deleteNotification(id).unwrap();
+  };
+
+  const handleClearAll = async () => {
+    if (window.confirm("Are you sure you want to delete all notifications?")) {
+      await clearAllNotifications().unwrap();
+    }
+  };
+
   return (
     <div className="relative inline-block text-left" ref={dropdownRef}>
       {/* Bell Button */}
@@ -71,39 +82,62 @@ export default function NotificationBell() {
         <div className="absolute right-0 mt-3 w-80 max-h-[400px] overflow-y-auto bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl z-50 flex flex-col transition-colors duration-200">
           <div className="p-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
             <h3 className="font-bold text-sm text-zinc-900 dark:text-zinc-50">Notifications</h3>
-            {unreadCount > 0 && (
-              <button
-                onClick={handleMarkAllRead}
-                className="text-xs text-violet-600 dark:text-violet-400 hover:underline font-semibold cursor-pointer"
-              >
-                Mark all read
-              </button>
-            )}
+            <div className="flex items-center gap-3">
+              {unreadCount > 0 && (
+                <button
+                  onClick={handleMarkAllRead}
+                  className="text-[11px] text-violet-600 dark:text-violet-400 hover:underline font-semibold cursor-pointer flex items-center gap-1"
+                >
+                  <CheckCircle2 className="w-3 h-3" /> Mark all read
+                </button>
+              )}
+              {notifications.length > 0 && (
+                <button
+                  onClick={handleClearAll}
+                  className="text-[11px] text-red-500 hover:underline font-semibold cursor-pointer flex items-center gap-1"
+                >
+                  <Trash2 className="w-3 h-3" /> Clear all
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto divide-y divide-zinc-150 dark:divide-zinc-800">
-            {notifications.filter(n => !n.isRead).length === 0 ? (
+            {notifications.length === 0 ? (
               <div className="p-8 text-center flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-500 gap-2">
                 <Inbox className="w-8 h-8 opacity-60" />
-                <p className="text-xs">No new notifications</p>
+                <p className="text-xs">No notifications</p>
               </div>
             ) : (
-              notifications.filter(n => !n.isRead).map((notif) => (
+              notifications.map((notif) => (
                 <div
                    key={notif._id}
                    onClick={() => handleNotificationClick(notif)}
-                   className={`p-4 flex gap-3 hover:bg-zinc-50 dark:hover:bg-zinc-850 cursor-pointer transition-colors duration-150 ${
+                   className={`p-4 flex gap-3 hover:bg-zinc-50 dark:hover:bg-zinc-850 cursor-pointer transition-colors duration-150 group ${
                      !notif.isRead ? "bg-violet-500/5" : ""
                    }`}
                 >
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center justify-between">
-                      <p className="text-xs font-bold text-zinc-900 dark:text-zinc-50">{notif.title}</p>
-                      {!notif.isRead && (
-                        <span className="w-2 h-2 bg-violet-600 dark:bg-violet-400 rounded-full shrink-0" />
-                      )}
+                      <div className="flex items-center gap-2">
+                        <p className={`text-xs font-bold ${notif.isRead ? "text-zinc-600 dark:text-zinc-300" : "text-zinc-900 dark:text-zinc-50"}`}>
+                          {notif.title}
+                        </p>
+                        {!notif.isRead && (
+                          <span className="w-2 h-2 bg-violet-600 dark:bg-violet-400 rounded-full shrink-0" />
+                        )}
+                      </div>
+                      <button
+                        onClick={(e) => handleDelete(e, notif._id)}
+                        className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-red-50 dark:hover:bg-red-500/10 text-red-500 transition-all cursor-pointer"
+                        title="Delete notification"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
-                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-normal">{notif.message}</p>
+                    <p className={`text-[11px] leading-normal ${notif.isRead ? "text-zinc-400 dark:text-zinc-500" : "text-zinc-500 dark:text-zinc-400"}`}>
+                      {notif.message}
+                    </p>
                     <p className="text-[10px] text-zinc-400 dark:text-zinc-500">
                       {new Date(notif.createdAt).toLocaleDateString()} at{" "}
                       {new Date(notif.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}

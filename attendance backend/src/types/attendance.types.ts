@@ -22,7 +22,7 @@ export interface IAttendanceBase {
   punches: IPunch[];
   breaks: IBreak[];
   workingHours: number;
-  completionStatus: "completed" | "incomplete";
+  completionStatus: "completed" | "half-day" | "incomplete";
   validation: {
     status: "pending" | "valid" | "invalid";
     remarks: string;

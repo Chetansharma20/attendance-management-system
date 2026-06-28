@@ -98,7 +98,7 @@ export const updateLeaveBalanceService = async (employeeId: string, { sick, casu
 
 export const applyLeaveService = async (
   employeeId: string,
-  { leaveType, startDate, endDate, reason }: any
+  { leaveType, startDate, endDate, reason, isHalfDay }: any
 ) => {
   const start = new Date(startDate);
   const end = new Date(endDate);
@@ -122,9 +122,17 @@ export const applyLeaveService = async (
     }
   });
 
-  const totalDays = Math.max(0, countWeekdays(start, end) - holidayCount);
-  if (totalDays < 1) {
-    throw new ApiError(400, "Leave request must include at least one working day (excluding weekends and public holidays)");
+  let totalDays = Math.max(0, countWeekdays(start, end) - holidayCount);
+  
+  if (isHalfDay) {
+    if (start.getTime() !== end.setHours(0,0,0,0)) {
+      throw new ApiError(400, "Half day leave must be for a single date");
+    }
+    totalDays = 0.5;
+  }
+
+  if (totalDays < 0.5) {
+    throw new ApiError(400, "Leave request must include at least a half working day (excluding weekends and public holidays)");
   }
 
   // Check for overlapping pending/approved leaves

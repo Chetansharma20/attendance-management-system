@@ -5,6 +5,8 @@ import {
   createNotification,
   findNotificationsByRecipient,
   findNotificationByIdAndRecipient,
+  deleteNotificationByIdAndRecipient,
+  deleteAllNotificationsForRecipient,
 } from "./notification.repository.js";
 
 interface CreateNotificationParams {
@@ -100,4 +102,23 @@ export const markAsReadService = async (notificationId: string, userId: string) 
   notification.isRead = true;
   await notification.save();
   return notification;
+};
+
+/**
+ * Delete a specific notification.
+ */
+export const deleteNotificationService = async (notificationId: string, userId: string) => {
+  const result = await deleteNotificationByIdAndRecipient(notificationId, userId);
+  if (result.deletedCount === 0) {
+    throw new ApiError(404, "Notification not found or already deleted");
+  }
+  return result;
+};
+
+/**
+ * Clear all notifications for a user.
+ */
+export const clearAllNotificationsService = async (userId: string) => {
+  const result = await deleteAllNotificationsForRecipient(userId);
+  return result;
 };

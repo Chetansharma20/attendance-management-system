@@ -113,7 +113,7 @@ export const punchOutService = async (userId: string, latitude: number, longitud
 
   const workingHours = calculateWorkingHours(attendance.punches, attendance.breaks);
   attendance.workingHours = workingHours;
-  attendance.completionStatus = workingHours >= 8 ? "completed" : "incomplete";
+  attendance.completionStatus = workingHours >= 8 ? "completed" : workingHours >= 4 ? "half-day" : "incomplete";
 
   await attendance.save();
   return attendance;

@@ -14,3 +14,11 @@ export const findNotificationByIdAndRecipient = async (
 ): Promise<INotification | null> => {
   return await Notification.findOne({ _id: id, recipientId });
 };
+
+export const deleteNotificationByIdAndRecipient = async (id: string, recipientId: string): Promise<any> => {
+  return await Notification.deleteOne({ _id: id, recipientId });
+};
+
+export const deleteAllNotificationsForRecipient = async (recipientId: string): Promise<any> => {
+  return await Notification.deleteMany({ recipientId });
+};

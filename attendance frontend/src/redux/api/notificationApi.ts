@@ -17,10 +17,26 @@ export const notificationApi = createApi({
       }),
       invalidatesTags: ['Notification'],
     }),
+    deleteNotification: builder.mutation<any, string | number>({
+      query: (id) => ({
+        url: `/notifications/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Notification'],
+    }),
+    clearAllNotifications: builder.mutation<any, void>({
+      query: () => ({
+        url: `/notifications/my/all`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Notification'],
+    }),
   }),
 });
 
 export const {
   useGetMyNotificationsQuery,
   useMarkAsReadMutation,
+  useDeleteNotificationMutation,
+  useClearAllNotificationsMutation,
 } = notificationApi;

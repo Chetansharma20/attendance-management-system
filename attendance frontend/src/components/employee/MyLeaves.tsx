@@ -88,6 +88,7 @@ interface ApplyForm {
   startDate: string;
   endDate: string;
   reason: string;
+  isHalfDay?: boolean;
 }
 
 export default function MyLeaves() {
@@ -107,7 +108,10 @@ export default function MyLeaves() {
   const policy = policyData?.data;
   const holidaysList = holidaysResponse?.data || [];
 
-  const previewDays = useMemo(() => countWeekdays(form.startDate, form.endDate, holidaysList), [form.startDate, form.endDate, holidaysList]);
+  const previewDays = useMemo(() => {
+    if (form.isHalfDay) return 0.5;
+    return countWeekdays(form.startDate, form.endDate, holidaysList);
+  }, [form.startDate, form.endDate, form.isHalfDay, holidaysList]);
 
   const handleExportCsv = () => {
     if (leaves.length === 0) return;
@@ -128,7 +132,7 @@ export default function MyLeaves() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setForm((prev) => {
-      const updated = { ...prev, [name]: value };
+      const updated = { ...prev, [name]: name === 'isHalfDay' ? (e.target as HTMLInputElement).checked : value };
       if (isSingleDay && name === 'startDate') {
         updated.endDate = value;
       }
@@ -146,14 +150,14 @@ export default function MyLeaves() {
       setFormError('All fields are required.');
       return;
     }
-    if (previewDays < 1) {
-      setFormError('Please select at least one working day (Mon–Fri).');
+    if (previewDays < 0.5) {
+      setFormError('Please select at least a half working day (Mon–Fri).');
       return;
     }
     try {
       await applyLeave(form).unwrap();
       setFormSuccess('Leave application submitted successfully!');
-      setForm({ leaveType: 'sick', startDate: '', endDate: '', reason: '' });
+      setForm({ leaveType: 'sick', startDate: '', endDate: '', reason: '', isHalfDay: false });
     } catch (err: any) {
       setFormError(err?.data?.message || 'Failed to submit leave request.');
     }
@@ -233,23 +237,44 @@ export default function MyLeaves() {
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5 max-w-2xl">
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="singleDay"
-              checked={isSingleDay}
-              onChange={(e) => {
-                const checked = e.target.checked;
-                setIsSingleDay(checked);
-                if (checked && form.startDate) {
-                  setForm(prev => ({ ...prev, endDate: prev.startDate }));
-                }
-              }}
-              className="rounded border-theme-input-border text-violet-600 focus:ring-violet-500 cursor-pointer w-4 h-4"
-            />
-            <label htmlFor="singleDay" className="text-xs font-semibold text-theme-muted cursor-pointer select-none">
-              Single Day Leave
-            </label>
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="singleDay"
+                checked={isSingleDay}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setIsSingleDay(checked);
+                  if (checked && form.startDate) {
+                    setForm(prev => ({ ...prev, endDate: prev.startDate }));
+                  }
+                  if (!checked) {
+                    setForm(prev => ({ ...prev, isHalfDay: false }));
+                  }
+                }}
+                className="rounded border-theme-input-border text-violet-600 focus:ring-violet-500 cursor-pointer w-4 h-4"
+              />
+              <label htmlFor="singleDay" className="text-xs font-semibold text-theme-muted cursor-pointer select-none">
+                Single Day Leave
+              </label>
+            </div>
+            
+            {isSingleDay && (
+              <div className="flex items-center gap-2 animate-fade-in">
+                <input
+                  type="checkbox"
+                  id="isHalfDay"
+                  name="isHalfDay"
+                  checked={form.isHalfDay || false}
+                  onChange={handleChange}
+                  className="rounded border-theme-input-border text-violet-600 focus:ring-violet-500 cursor-pointer w-4 h-4"
+                />
+                <label htmlFor="isHalfDay" className="text-xs font-semibold text-theme-muted cursor-pointer select-none">
+                  Half Day (0.5)
+                </label>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
